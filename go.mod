@@ -1,4 +1,4 @@
-module github.com/happycrud/protoc-gen-go-gin
+module github.com/guoming0000/protoc-gen-go-gin
 
 go 1.17
 
