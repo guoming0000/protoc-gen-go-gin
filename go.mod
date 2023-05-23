@@ -1,6 +1,6 @@
 module github.com/guoming0000/protoc-gen-go-gin
 
-go 1.17
+go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.7.7
