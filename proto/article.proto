@@ -1,0 +1,47 @@
+syntax = "proto3";
+// 文件名使用小写下划线的命名风格，例如 lower_snake_case.proto
+// 包名应该和目录结构对应，例如文件在my/package/目录下，包名应为 my.package
+option go_package = "api/v1/article";
+package api.v1.article;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+// RPC 服务名和方法名，均使用首字母大写驼峰风格，例如service FooService{ rpc GetSomething() }
+// blog service is a blog demo
+service BlogService {
+    rpc GetArticles(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { post: "/v1/articles" additional_bindings { post: "/v1/author/articles" } }; }
+    rpc CreateArticle(Article) returns (Article) { option (google.api.http) = { post: "/v1/author/{author_id}/articles"}; }
+}
+
+// 消息名使用首字母大写驼峰风格(CamelCase)，例如message StudentReq { ... }
+message GetArticlesReq {
+    string title = 1;
+    int32 page = 2 [(validate.rules).int32.lt = 999];;
+    // 字段名使用小写下划线的风格，例如 string status_code = 1
+    int32 page_size = 3;
+    int32 author_id = 4;
+    string email = 5 [(validate.rules).string.email = true];
+    string name = 6 [(validate.rules).string = {
+        pattern:   "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
+        max_bytes: 256,
+    }];
+    Location home = 7 [(validate.rules).message.required = true];
+    message Location {
+        double lat = 1 [(validate.rules).double = {gte: -90,  lte: 90}];
+        double lng = 2 [(validate.rules).double = {gte: -180, lte: 180}];
+    }
+}
+
+message GetArticlesReply {
+    int64 total = 1;
+    repeated Article articles = 2;
+}
+
+message Article {
+    string title  = 1;
+    string content = 2;
+    int32 author_id = 3;
+}
+
+// 枚举类型，枚举名使用首字母大写驼峰风格，例如 enum FooBar，枚举值使用全大写下划线隔开的风格(CAPITALS_WITH_UNDERSCORES )，例如 FOO_DEFAULT=1

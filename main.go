@@ -33,9 +33,11 @@ func main() {
 			if !f.Generate {
 				continue
 			}
-			// {package_name}_http.pb.go
-			generateFile(gen, f)
-			// {package_name}_struct.pb.go
+			// {package_name}_http_server.pb.go
+			generateHttpServer(gen, f)
+			// {package_name}_http_client.pb.go
+			generateHttpClient(gen, f)
+			// {package_name}_json.pb.go
 			generateJsonFile(gen, f)
 		}
 		return nil
@@ -44,6 +46,7 @@ func main() {
 
 const (
 	gocoreApi    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	httpRequest  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
 	ginPackage   = protogen.GoImportPath("github.com/gin-gonic/gin")
 	sonicPackage = protogen.GoImportPath("github.com/bytedance/sonic")
 )
@@ -64,13 +67,13 @@ func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *pro
 }
 
 // generateFile generates a _grpc.pb.go file containing gRPC service definitions.
-func generateFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
+func generateHttpServer(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
 	if len(file.Services) == 0 {
 		return nil
 	}
 	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+"_http_server.pb.go", file.GoImportPath)
 	generateFileHeader(g, file, gen)
-	generateFileContent(file, g)
+	generateHttpServerContent(file, g)
 	return g
 }
 
@@ -78,17 +81,24 @@ func generateJsonFile(gen *protogen.Plugin, file *protogen.File) *protogen.Gener
 	if len(file.Services) == 0 {
 		return nil
 	}
-	filename := file.GeneratedFilenamePrefix + "_struct.pb.go"
+	filename := file.GeneratedFilenamePrefix + "_json.pb.go"
 	g := gen.NewGeneratedFile(filename, file.GoImportPath)
 	generateFileHeader(g, file, gen)
 	generateJsonContent(file, g)
 	return g
 }
 
-//
-//func (m *%s) UnMarshal(data []byte) error {
-//	return %s(data, m)
-//}
+func generateHttpClient(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
+	if len(file.Services) == 0 {
+		return nil
+	}
+	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+"_http_client.pb.go", file.GoImportPath)
+	generateFileHeader(g, file, gen)
+	generateHttpClientContent(file, g)
+	return g
+}
+
+// generate mashal/unmarshal method
 func generateJsonContent(file *protogen.File, g *protogen.GeneratedFile) {
 	for _, msg := range file.Messages {
 		name := msg.Desc.FullName().Name()
@@ -97,13 +107,26 @@ func generateJsonContent(file *protogen.File, g *protogen.GeneratedFile) {
 			return %s(m)
 		}
 
-		func UnMarshal%s(data []byte) (*%s, error) {
-			n := new(%s)
-			err := %s(data, n)
-			return n, err
+		func (m *%s) MarshalString() (string, error) {
+			return %s(m)
+		}
+
+		func (m *%s)Unmarshal(buf []byte) (error) {
+			m = new(%s)
+			err := %s(buf, m)
+			return err
+		}
+
+		func (m *%s)UnmarshalString(str string) (error) {
+			m = new(%s)
+			err := %s(str, m)
+			return err
 		}
 		`, name, g.QualifiedGoIdent(sonicPackage.Ident("Marshal")),
-			name, name, name, g.QualifiedGoIdent(sonicPackage.Ident("Unmarshal"))))
+			name, g.QualifiedGoIdent(sonicPackage.Ident("MarshalString")),
+			name, name, g.QualifiedGoIdent(sonicPackage.Ident("Unmarshal")),
+			name, name, g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
+		))
 		g.P()
 	}
 }
@@ -124,8 +147,8 @@ func printErr(format string, a ...any) {
 	fmt.Fprintf(os.Stderr, format, a...)
 }
 
-// generateFileContent generates the gRPC service definitions, excluding the package statement.
-func generateFileContent(file *protogen.File, g *protogen.GeneratedFile) {
+// generateHttpServerContent generates the http service definitions, excluding the package statement.
+func generateHttpServerContent(file *protogen.File, g *protogen.GeneratedFile) {
 	if len(file.Services) == 0 {
 		return
 	}
@@ -135,11 +158,22 @@ func generateFileContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}
 }
 
+// generateHttpClientContent generates the http client definitions, excluding the package statement.
+func generateHttpClientContent(file *protogen.File, g *protogen.GeneratedFile) {
+	if len(file.Services) == 0 {
+		return
+	}
+
+	for _, service := range file.Services {
+		genClient(g, service)
+	}
+}
+
 func serverSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
 	var reqArgs []string
 	ret := "error"
 	if !method.Desc.IsStreamingClient() && !method.Desc.IsStreamingServer() {
-		reqArgs = append(reqArgs, g.QualifiedGoIdent(gocoreApi.Ident("Context")))
+		reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(gocoreApi.Ident("Context")))
 		ret = "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
 	}
 	if !method.Desc.IsStreamingClient() {
@@ -199,12 +233,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
 		g.P("ctx := api.NewContext(g)")
-		g.P(`err := ctx.BindValidator(req)
-		if err != nil {
-			ctx.RetJSON(nil, err)
-			return
-		}`)
-		g.P("resp, err := srv.", m.Name, "(ctx, req)")
+		g.P("resp, err := srv.", m.Name, "(&ctx, req)")
 		g.P(`if err != nil {
 				ctx.RetJSON(nil, err)
 				return
@@ -213,6 +242,64 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 			return
 			}
 		}`)
+		g.P()
+	}
+}
+
+func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
+	// Server interface.
+	serverType := service.GoName + "HTTPClient"
+	g.P("// ", serverType, " is the client API for ", service.GoName, " service.")
+
+	if service.Desc.Options().(*descriptorpb.ServiceOptions).GetDeprecated() {
+		g.P("//")
+	}
+	g.Annotate(serverType, service.Location)
+	g.P("type ", serverType, " interface {")
+	for _, m := range service.Methods {
+		if m.Desc.IsStreamingClient() || m.Desc.IsStreamingServer() {
+			continue
+		}
+		g.Annotate(serverType+"."+m.GoName, m.Location)
+		if m.Desc.Options().(*descriptorpb.MethodOptions).GetDeprecated() {
+		}
+		g.P(m.Comments.Leading, serverSignature(g, m))
+	}
+	g.P("}")
+	g.P()
+
+	var methods []*method
+	for _, m := range service.Methods {
+		rule, ok := proto.GetExtension(m.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
+		if rule != nil && ok {
+			// 跳过additional的client生成，一般只需要请求一个接口
+			//for _, bind := range rule.AdditionalBindings {
+			//	methods = append(methods, buildHTTPRule(m, bind))
+			//}
+			methods = append(methods, buildHTTPRule(m, rule))
+		}
+	}
+
+	// type XXXHttpClientImpl struct
+	g.P("type ", serverType, "Impl struct {")
+	g.P("hh *", httpRequest.Ident("HttpClient"))
+	g.P("}")
+	g.P()
+
+	// func NewXXXHttpClient
+	g.P("func New", serverType, "(hh *", httpRequest.Ident("HttpClient"), ") ", serverType, " {")
+	g.P("return &", serverType, "Impl{hh: hh}")
+	g.P("}")
+	g.P()
+
+	// http method func
+	for _, m := range methods {
+		// func (c *XXXHttpClientImpl) XXX(ctx *Context, req *XXXRequest) (*XXXResponse, error)
+		g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx *", gocoreApi.Ident("Context"), ", req *", m.Request, ") (*", m.Reply, ", error) {")
+		g.P("resp := &", m.Reply, "{}")
+		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
+		g.P("return resp, err")
+		g.P("}")
 		g.P()
 	}
 }
