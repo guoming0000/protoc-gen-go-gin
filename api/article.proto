@@ -2,7 +2,6 @@ syntax = "proto3";
 // 文件名使用小写下划线的命名风格，例如 lower_snake_case.proto
 // 包名应该和目录结构对应，例如文件在my/package/目录下，包名应为 my.package
 option go_package = "api/v1/article";
-package api.v1.article;
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";

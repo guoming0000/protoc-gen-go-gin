@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "api/v1/article";
+// import "errors/errors.proto";
+
+enum ArticleErrorReason {
+  // option (erorrs.default_code) = 200;
+
+  UNKNOW_ERROR = 0;
+
+  ERR_PRODUCT_NOT_FOUND                      = 16050030;
+  ERR_PRODUCT_MODULE_NOT_FOUND               = 16050033;
+  ERR_SAAS_DEVICE_BIND_FAIL                  = 16050031;
+  ERR_PRODUCT_APP_FOUND_FAIL                 = 16050032;
+  ERR_REGISTER_DEVICE_LIMIT                  = 16050016;
+  ERR_REGISTER_DEVICE_SINGLE_FAILE           = 16050017;
+  ERR_REGISTER_DEVICE_BATCH_FAILE            = 16050018;
+}

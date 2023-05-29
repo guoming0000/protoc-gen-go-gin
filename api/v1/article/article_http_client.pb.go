@@ -2,13 +2,16 @@
 // versions:
 // - protoc-gen-go-gin v0.0.1
 // - protoc            v3.21.12
-// source: proto/article.proto
+// source: api/article.proto
 
 package article
 
 import (
+	sonic "github.com/bytedance/sonic"
 	api "github.com/sunmi-OS/gocore/v2/api"
+	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	http_request "github.com/sunmi-OS/gocore/v2/utils/http-request"
+	http "net/http"
 )
 
 // BlogServiceHTTPClient is the client API for BlogService service.
@@ -25,14 +28,34 @@ func NewBlogServiceHTTPClient(hh *http_request.HttpClient) BlogServiceHTTPClient
 	return &BlogServiceHTTPClientImpl{hh: hh}
 }
 
+// will move to gocore
+func unmarshal(data interface{}, v interface{}) error {
+	if str, ok := data.([]byte); ok {
+		err := sonic.Unmarshal(str, v)
+		if err != nil {
+			return ecode.NewV2(http.StatusBadRequest, err.Error())
+		}
+		return nil
+	}
+	return ecode.NewV2(http.StatusBadRequest, "data type error")
+}
+
 func (c *BlogServiceHTTPClientImpl) GetArticles(ctx *api.Context, req *GetArticlesReq) (*GetArticlesReply, error) {
 	resp := &GetArticlesReply{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/articles")
+	_, err := c.hh.Client.R().SetContext(ctx).SetBody(ctx.R).SetResult(resp).Post("/v1/articles")
+	if err != nil {
+		return nil, err
+	}
+	err = unmarshal(ctx.R.Data, resp)
 	return resp, err
 }
 
 func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx *api.Context, req *Article) (*Article, error) {
 	resp := &Article{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/author/:author_id/articles")
+	_, err := c.hh.Client.R().SetContext(ctx).SetBody(ctx.R).SetResult(resp).Post("/v1/author/:author_id/articles")
+	if err != nil {
+		return nil, err
+	}
+	err = unmarshal(ctx.R.Data, resp)
 	return resp, err
 }

@@ -37,9 +37,10 @@ var (
 	}
 )
 
-func GetHostUrl(isPrivate bool, envStr string) string {
-	if envStr == "" {
-		envStr = utils.GetRunTime()
+func GetHostUrl(isPrivate bool, envStrs ...string) string {
+	envStr := utils.GetRunTime()
+	if len(envStrs) > 0 {
+		envStr = envStrs[0]
 	}
 	hostMap := PublicHosts
 	if isPrivate {
@@ -55,20 +56,24 @@ func GetHostUrl(isPrivate bool, envStr string) string {
 }
 
 // 根据需要配置client相关参数
-func newClient(isPrivate bool) *http_request.HttpClient {
+func newClient(isPrivate bool, strs ...string) *http_request.HttpClient {
+	str := "onl"
+	if len(strs) > 0 {
+		str = strs[0]
+	}
 	h := http_request.New()
 	h.Client.SetTimeout(time.Second * 30).OnAfterResponse(MustCode200)
-	h.Client.SetHostURL(GetHostUrl(isPrivate, ""))
+	h.Client.SetHostURL(GetHostUrl(isPrivate, str))
 	return h
 }
 
 // NewClient 使用者也可以根据需要，自己生成newClient方法，然后调用NewBlogHTTPClient方法
-func NewClient() BlogServiceHTTPClient {
-	return NewBlogServiceHTTPClient(newClient(true))
+func NewClient(strs ...string) BlogServiceHTTPClient {
+	return NewBlogServiceHTTPClient(newClient(true, strs...))
 }
 
-func NewPublicClient() BlogServiceHTTPClient {
-	return NewBlogServiceHTTPClient(newClient(false))
+func NewPublicClient(strs ...string) BlogServiceHTTPClient {
+	return NewBlogServiceHTTPClient(newClient(false, strs...))
 }
 
 var DefaultClient = NewClient()

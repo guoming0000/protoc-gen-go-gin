@@ -49,6 +49,8 @@ const (
 	httpRequest  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
 	ginPackage   = protogen.GoImportPath("github.com/gin-gonic/gin")
 	sonicPackage = protogen.GoImportPath("github.com/bytedance/sonic")
+	httpPackage  = protogen.GoImportPath("net/http")
+	ecodePackage = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -292,12 +294,31 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("}")
 	g.P()
 
+	g.P(fmt.Sprintf(`// will move to gocore
+		func unmarshal(data interface{}, v interface{}) error {
+			if str, ok := data.([]byte); ok {
+				err := %v(str, v)
+				if err != nil {
+					return %v(%v, err.Error())
+				}
+				return nil
+			}
+			return %v(%v, "data type error")
+		}`, g.QualifiedGoIdent(sonicPackage.Ident("Unmarshal")),
+		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")), g.QualifiedGoIdent(httpPackage.Ident("StatusBadRequest")),
+		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")), g.QualifiedGoIdent(httpPackage.Ident("StatusBadRequest"))))
+	g.P()
+
 	// http method func
 	for _, m := range methods {
 		// func (c *XXXHttpClientImpl) XXX(ctx *Context, req *XXXRequest) (*XXXResponse, error)
 		g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx *", gocoreApi.Ident("Context"), ", req *", m.Request, ") (*", m.Reply, ", error) {")
 		g.P("resp := &", m.Reply, "{}")
-		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
+		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(ctx.R).SetResult(resp).Post(\"", m.Path, "\")")
+		g.P(`if err != nil {
+			return nil, err
+		}
+		err = unmarshal(ctx.R.Data, resp)`)
 		g.P("return resp, err")
 		g.P("}")
 		g.P()

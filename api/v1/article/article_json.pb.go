@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.1
 // - protoc            v3.21.12
-// source: proto/article.proto
+// source: api/article.proto
 
 package article
 

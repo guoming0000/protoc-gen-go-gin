@@ -1,3 +1,4 @@
+protoc-gen-go-errors/protoc-gen-go-errors
 protoc-gen-go-gin
 
 # Binaries for programs and plugins

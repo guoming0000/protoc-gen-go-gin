@@ -22,6 +22,7 @@ type blogServiceHttpServer struct {
 }
 
 func (b *blogServiceHttpServer) GetArticles(context *api.Context, req *article.GetArticlesReq) (*article.GetArticlesReply, error) {
+	req.Validate()
 	return &article.GetArticlesReply{
 		Total: 775755,
 	}, nil
