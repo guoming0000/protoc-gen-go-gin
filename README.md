@@ -24,7 +24,7 @@ cp -r protoc-gen-go-gin/third_party $(go env GOPATH)/pkg/mod/github.com/guoming0
 ```bash
 protoc -I. -I ./third_party --go-gin_out=./ --go_out=./ --validate_out=lang=go:./ api/article.proto
 
-protoc -I. -I ./third_party --go-errors_out=./ api/article_error.proto
+protoc --go-errors_out=./ api/article_error.proto
 ```
 
 proto demo
