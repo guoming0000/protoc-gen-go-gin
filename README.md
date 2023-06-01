@@ -23,6 +23,8 @@ cp -r protoc-gen-go-gin/third_party $(go env GOPATH)/pkg/mod/github.com/guoming0
 ## 使用
 ```bash
 protoc -I. -I ./third_party --go-gin_out=./ --go_out=./ --validate_out=lang=go:./ api/article.proto
+
+protoc -I. -I ./third_party --go-errors_out=./ api/article_error.proto
 ```
 
 proto demo
@@ -53,4 +55,5 @@ type GetArticlesReq struct {
 }
 ```
 ## TODO
-- 支持自定义错误码
+- [x] 支持proto-gen-error-go
+- [x] 支持自定义错误码

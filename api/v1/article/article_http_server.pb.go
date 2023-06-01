@@ -24,17 +24,28 @@ func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
 	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle0_HTTP_Handler(srv))
 }
 
+func setRetJSON(ctx *api.Context, resp interface{}, err error) {
+	if flag, ok := ctx.C.Value(XLocalCustomReturn).(bool); ok && flag {
+		return
+	}
+	if err != nil {
+		ctx.RetJSON(nil, err)
+		return
+	}
+	ctx.RetJSON(resp, nil)
+	return
+}
+
+const (
+	XLocalCustomReturn = "x-local-custom-return"
+)
+
 func _BlogService_GetArticles0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
 		resp, err := srv.GetArticles(&ctx, req)
-		if err != nil {
-			ctx.RetJSON(nil, err)
-			return
-		}
-		ctx.RetJSON(resp, nil)
-		return
+		setRetJSON(&ctx, resp, err)
 	}
 }
 
@@ -43,12 +54,7 @@ func _BlogService_GetArticles1_HTTP_Handler(srv BlogServiceHTTPServer) func(g *g
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
 		resp, err := srv.GetArticles(&ctx, req)
-		if err != nil {
-			ctx.RetJSON(nil, err)
-			return
-		}
-		ctx.RetJSON(resp, nil)
-		return
+		setRetJSON(&ctx, resp, err)
 	}
 }
 
@@ -57,11 +63,6 @@ func _BlogService_CreateArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g 
 		req := &Article{}
 		ctx := api.NewContext(g)
 		resp, err := srv.CreateArticle(&ctx, req)
-		if err != nil {
-			ctx.RetJSON(nil, err)
-			return
-		}
-		ctx.RetJSON(resp, nil)
-		return
+		setRetJSON(&ctx, resp, err)
 	}
 }

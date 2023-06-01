@@ -229,6 +229,24 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("}")
 	g.P()
 
+	g.P(`func setRetJSON(ctx *api.Context, resp interface{}, err error) {
+	if flag, ok := ctx.C.Value(XLocalCustomReturn).(bool); ok && flag {
+		return
+	}
+	if err != nil {
+		ctx.RetJSON(nil, err)
+		return
+	}
+	ctx.RetJSON(resp, nil)
+	return
+	}`)
+	g.P()
+
+	g.P("const (")
+	g.P(`XLocalCustomReturn = "x-local-custom-return"`)
+	g.P(")")
+	g.P()
+
 	// http method func
 	for _, m := range methods {
 		g.P("func ", httpHandlerName(service.GoName, m.Name, m.Num), "(srv ", serverType, ") func(g *gin.Context) {")
@@ -236,14 +254,8 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("req := &", m.Request, "{}")
 		g.P("ctx := api.NewContext(g)")
 		g.P("resp, err := srv.", m.Name, "(&ctx, req)")
-		g.P(`if err != nil {
-				ctx.RetJSON(nil, err)
-				return
-			}
-			ctx.RetJSON(resp, nil)
-			return
-			}
-		}`)
+		g.P(`setRetJSON(&ctx, resp, err)
+		}}`)
 		g.P()
 	}
 }

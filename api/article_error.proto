@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 option go_package = "api/v1/article";
-// import "errors/errors.proto";
 
 enum ArticleErrorReason {
   // option (erorrs.default_code) = 200;

@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"strings"
+	"unicode"
+
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/types/pluginpb"
-	"os"
-	"strings"
-	"unicode"
 )
 
 const version = "0.0.1"
@@ -40,7 +41,9 @@ func main() {
 }
 
 const (
-	gocoreApi = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	gocoreApi     = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	ecodePackage  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	errorsPackage = protogen.GoImportPath("errors")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -63,7 +66,7 @@ func generateErrors(gen *protogen.Plugin, file *protogen.File) *protogen.Generat
 	if len(file.Enums) == 0 {
 		return nil
 	}
-	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+"_errors.pb.go", file.GoImportPath)
+	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+"_ecode.pb.go", file.GoImportPath)
 	generateFileHeader(g, file, gen)
 	generateErrorsContent(file, g)
 	return g
@@ -87,26 +90,79 @@ func printErr(format string, a ...any) {
 
 // generateErrorsContent generates the http service definitions, excluding the package statement.
 func generateErrorsContent(file *protogen.File, g *protogen.GeneratedFile) {
-	index := 0
+	if 0 == len(file.Enums) {
+		g.Skip()
+		return
+	}
+
+	g.P("const (")
 	for _, enum := range file.Enums {
-		if !genErrorsReason(g, enum) {
-			index++
+		for _, v := range enum.Values {
+			g.P(v.Desc.Name(), " = ", v.Desc.Number())
+		}
+		g.P()
+	}
+	g.P(")")
+	g.P()
+
+	g.P("var (")
+	g.P("ErrMap = map[int]string{")
+	for _, enum := range file.Enums {
+		for _, v := range enum.Values {
+			// make v.Desc.Name() to camel case
+			g.P(v.Desc.Name(), ": \"", err2word(string(v.Desc.Name())), "\",")
+		}
+		g.P()
+	}
+	g.P("})")
+	g.P()
+
+	g.P("func makeNewErr(code int, msg ...string) *ecode.ErrorV2 {")
+	g.P(`msgStr := ErrMap[code]
+		if len(msg) > 0 {
+			msgStr = msg[0]
+		}
+		return ecode.NewV2(code, msgStr)
+	}`)
+	g.P()
+
+	// make error func return ecode.ErrorV2
+	for _, enum := range file.Enums {
+		for _, v := range enum.Values {
+			g.P("func ", case2Camel(string(v.Desc.Name())), "(msg ...string) *", ecodePackage.Ident("ErrorV2"), " {")
+			g.P("return makeNewErr(", v.Desc.Name(), ", msg...)")
+			g.P("}")
+			g.P()
 		}
 	}
 
-	if index == len(file.Enums) {
-		g.Skip()
+	// make Is func
+	for _, enum := range file.Enums {
+		for _, v := range enum.Values {
+			g.P("func Is", case2Camel(string(v.Desc.Name())), "(err error) bool {")
+			g.P("if se := new(", ecodePackage.Ident("ErrorV2"), "); ", errorsPackage.Ident("As"), "(err, &se) {")
+			g.P("return se.Status.Code == ", v.Desc.Name())
+			g.P("}")
+			g.P("return false")
+			g.P("}")
+			g.P()
+
+			g.P("func Is", case2Camel(string(v.Desc.Name())), "DEEP(err error) bool {")
+			g.P("if se := new(", ecodePackage.Ident("ErrorV2"), "); errors.As(err, &se) {")
+			g.P("return se.Status.Code == ", v.Desc.Name(), " && se.Status.Reason == ErrMap[", v.Desc.Name(), "]")
+			g.P("}")
+			g.P("return false")
+			g.P("}")
+			g.P()
+		}
 	}
 }
 
-func genErrorsReason(g *protogen.GeneratedFile, enum *protogen.Enum) bool {
-	// code := 200
-	for _, v := range enum.Values {
-		printErr("enum: %s\n", v)
-		// v.Desc.FullName()
-		v.Desc.Number()
-	}
-	return false
+func err2word(name string) string {
+	s := strings.TrimPrefix(name, "ERR_")
+	s = strings.ReplaceAll(s, "_", " ")
+	s = strings.ToLower(s)
+	return s
 }
 
 var enCases = cases.Title(language.AmericanEnglish, cases.NoLower)
