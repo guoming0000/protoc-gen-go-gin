@@ -12,10 +12,13 @@ wget 'http://qiniu.brightguo.com/sunmi/protoc-gen-go_mac13.0' -O protoc-gen-go &
 # protoc-gen-go-gin（生成{package}_http_client.pb.go {package}_http_server.pb.go {package}_json.pb.go）
 go install github.com/guoming0000/protoc-gen-go-gin@latest
 
+# protoc-gen-go-errors (生成{package}_ecode.pb.go)
+go install github.com/guoming0000/protoc-gen-go-gin/protoc-gen-go-errors@latest
+  
 # protoc-gen-validate（生成validate)
 go install github.com/envoyproxy/protoc-gen-validate@latest
 
-# 安装编译依赖的proto
+# 拷贝third_party目录(protoc-gen-go-gin和protoc-gen-validate会用到)
 git clone git@github.com:guoming0000/protoc-gen-go-gin.git
 cp -r protoc-gen-go-gin/third_party $(go env GOPATH)/pkg/mod/github.com/guoming0000/
 ```
