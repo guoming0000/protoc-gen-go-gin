@@ -271,7 +271,8 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
 		g.P(`ctx := api.NewContext(g)
-			if checkValidate(&ctx, req) != nil {
+			err := checkValidate(&ctx, req)
+			if err != nil {
 				setRetJSON(&ctx, nil, err)
 				return
 		}`)
