@@ -229,6 +229,24 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("}")
 	g.P()
 
+	g.P(`var validateErr error
+
+	func OpenAutoValidate(validatErr error) {
+		validateErr = validatErr
+	}
+
+	func checkValidate(ctx *api.Context, req interface{}) error {
+		if validateErr != nil {
+			err0 := ctx.BindValidator(req)
+			if err0 != nil {
+				setRetJSON(ctx, nil, validateErr)
+				return validateErr
+			}
+		}
+		return nil
+	}`)
+	g.P()
+
 	g.P(`func setRetJSON(ctx *api.Context, resp interface{}, err error) {
 	if flag, ok := ctx.C.Value(XLocalCustomReturn).(bool); ok && flag {
 		return
@@ -252,7 +270,11 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("func ", httpHandlerName(service.GoName, m.Name, m.Num), "(srv ", serverType, ") func(g *gin.Context) {")
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
-		g.P("ctx := api.NewContext(g)")
+		g.P(`ctx := api.NewContext(g)
+			if checkValidate(&ctx, req) != nil {
+				setRetJSON(&ctx, nil, err)
+				return
+		}`)
 		g.P("resp, err := srv.", m.Name, "(&ctx, req)")
 		g.P(`setRetJSON(&ctx, resp, err)
 		}}`)
@@ -319,6 +341,12 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 		}`, g.QualifiedGoIdent(sonicPackage.Ident("Unmarshal")),
 		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")), g.QualifiedGoIdent(httpPackage.Ident("StatusBadRequest")),
 		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")), g.QualifiedGoIdent(httpPackage.Ident("StatusBadRequest"))))
+	g.P()
+
+	g.P(`func IsDataTypeError(err error) bool {
+		e2 := ecode.FromError(err)
+		return e2.Code() == http.StatusBadRequest && e2.Message() == "data type error"
+	}`)
 	g.P()
 
 	// http method func
