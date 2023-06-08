@@ -28,6 +28,8 @@ cp -r protoc-gen-go-gin/third_party $(go env GOPATH)/pkg/mod/github.com/guoming0
 protoc -I. -I ./third_party --go-gin_out=./ --go_out=./ --validate_out=lang=go:./ api/article.proto
 
 protoc --go-errors_out=./ api/article_error.proto
+
+protoc -I. -I ./third_party --openapiv2_out . --openapiv2_opt logtostderr=true --openapiv2_opt json_names_for_fields=false api/article.proto
 ```
 
 proto demo

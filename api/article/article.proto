@@ -1,35 +1,36 @@
 syntax = "proto3";
 // 文件名使用小写下划线的命名风格，例如 lower_snake_case.proto
 // 包名应该和目录结构对应，例如文件在my/package/目录下，包名应为 my.package
-option go_package = "api/v1/article";
+option go_package = "api/article";
 
 import "google/api/annotations.proto";
-import "validate/validate.proto";
 
 // RPC 服务名和方法名，均使用首字母大写驼峰风格，例如service FooService{ rpc GetSomething() }
 // blog service is a blog demo
 service BlogService {
+    // 获取文章列表 | 可以读取不多于999个文章列表
     rpc GetArticles(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { post: "/v1/articles" additional_bindings { post: "/v1/author/articles" } }; }
+    // 新建文章
     rpc CreateArticle(Article) returns (Article) { option (google.api.http) = { post: "/v1/author/{author_id}/articles"}; }
 }
 
 // 消息名使用首字母大写驼峰风格(CamelCase)，例如message StudentReq { ... }
 message GetArticlesReq {
-    string title = 1;
-    int32 page = 2 [(validate.rules).int32.lt = 999];;
+    // 文章标题
+    string title = 1; // 标题名称右注释 binding:"required"
+    int32 page = 2; // binding:"lt=999"
     // 字段名使用小写下划线的风格，例如 string status_code = 1
-    int32 page_size = 3;
+    int32 page_size = 3; // binding:"lte=101"
+    // 作者id
     int32 author_id = 4;
-    string email = 5 [(validate.rules).string.email = true];
-    string name = 6 [(validate.rules).string = {
-        pattern:   "^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$",
-        max_bytes: 256,
-    }];
-    Location home = 7 [(validate.rules).message.required = true];
+    string email = 5;// binding:"email"
+    string name = 6;
+    Location home = 7; // binding:"required"
     message Location {
-        double lat = 1 [(validate.rules).double = {gte: -90,  lte: 90}];
-        double lng = 2 [(validate.rules).double = {gte: -180, lte: 180}];
+        double lat = 1; // binding:"lte:90,gte:-90"
+        double lng = 2; // binding:"gte:-180,lte:180"
     }
+    string test_str = 8; //  binding:"required"
 }
 
 message GetArticlesReply {
@@ -38,7 +39,8 @@ message GetArticlesReply {
 }
 
 message Article {
-    string title  = 1;
+    // 标题名称上注释
+    string title  = 1; // 标题名称右注释
     string content = 2;
     int32 author_id = 3;
 }

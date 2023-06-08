@@ -1,0 +1,161 @@
+# Generated with protoc-gen-openapi
+# https://github.com/kollalabs/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: BlogService API
+    description: |-
+        RPC 服务名和方法名，均使用首字母大写驼峰风格，例如service FooService{ rpc GetSomething() }
+         blog service is a blog demo
+    version: 0.0.1
+paths:
+    /v1/articles:
+        post:
+            tags:
+                - BlogService
+            summary: 获取文章列表
+            description: 可以读取不多于999个文章列表
+            operationId: BlogService_GetArticles
+            parameters:
+                - name: title
+                  in: query
+                  description: 文章标题 @default=默认标题
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    exclusiveMaximum: true
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  description: 字段名使用小写下划线的风格，例如 string status_code = 1
+                  schema:
+                    maximum: !!float 101
+                    type: integer
+                    format: int32
+                - name: authorId
+                  in: query
+                  description: 作者id
+                  schema:
+                    type: integer
+                    format: int32
+                - name: email
+                  in: query
+                  schema:
+                    type: string
+                    format: email
+                - name: name
+                  in: query
+                  schema:
+                    pattern: ^[^[0-9]A-Za-z]+( [^[0-9]A-Za-z]+)*$
+                    type: string
+                - name: home.lat
+                  in: query
+                  schema:
+                    type: number
+                    format: double
+                - name: home.lng
+                  in: query
+                  schema:
+                    type: number
+                    format: double
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetArticlesReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/author/{authorId}/articles:
+        post:
+            tags:
+                - BlogService
+            summary: CreateArticle
+            description: 新建文章
+            operationId: BlogService_CreateArticle
+            parameters:
+                - name: authorId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+                - name: title
+                  in: query
+                  description: 标题名称上注释
+                  schema:
+                    type: string
+                - name: content
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Article'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        Article:
+            type: object
+            properties:
+                title:
+                    type: string
+                    description: 标题名称上注释
+                content:
+                    type: string
+                authorId:
+                    type: integer
+                    format: int32
+        GetArticlesReply:
+            type: object
+            properties:
+                total:
+                    type: integer
+                    format: int64
+                articles:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Article'
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+tags:
+    - name: BlogService

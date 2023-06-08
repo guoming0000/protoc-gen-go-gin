@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "api/v1/article";
+option go_package = "api/article";
 
 enum ArticleErrorReason {
   UNKNOW_ERROR = 0;
