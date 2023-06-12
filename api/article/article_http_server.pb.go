@@ -9,6 +9,8 @@ package article
 import (
 	gin "github.com/gin-gonic/gin"
 	api "github.com/sunmi-OS/gocore/v2/api"
+	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
+	utils "github.com/sunmi-OS/gocore/v2/utils"
 )
 
 // BlogServiceHTTPServer is the server API for BlogService service.
@@ -26,16 +28,37 @@ func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
 	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle0_HTTP_Handler(srv))
 }
 
+var validateErr error
+
+func SetAutoValidate(validatErr error) {
+	validateErr = validatErr
+}
+
+func checkValidate(ctx *api.Context, req interface{}) error {
+	err0 := ctx.ShouldBind(req)
+	if err0 != nil {
+		if validateErr != nil {
+			if utils.IsRelease() {
+				return validateErr
+			}
+			err1 := ecode.FromError(validateErr)
+			err1.Status.Message = err1.Status.Message + "(" + err0.Error() + ")"
+			return err1
+		}
+
+		if utils.IsRelease() {
+			return api.ErrorBind
+		}
+		return err0
+	}
+	return nil
+}
+
 func setRetJSON(ctx *api.Context, resp interface{}, err error) {
 	if flag, ok := ctx.C.Value(XLocalCustomReturn).(bool); ok && flag {
 		return
 	}
-	if err != nil {
-		ctx.RetJSON(nil, err)
-		return
-	}
-	ctx.RetJSON(resp, nil)
-	return
+	ctx.RetJSON(resp, err)
 }
 
 const (
@@ -46,6 +69,11 @@ func _BlogService_GetArticles0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *g
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
+		err := checkValidate(&ctx, req)
+		if err != nil {
+			setRetJSON(&ctx, "{}", err)
+			return
+		}
 		resp, err := srv.GetArticles(&ctx, req)
 		setRetJSON(&ctx, resp, err)
 	}
@@ -55,6 +83,11 @@ func _BlogService_GetArticles1_HTTP_Handler(srv BlogServiceHTTPServer) func(g *g
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
+		err := checkValidate(&ctx, req)
+		if err != nil {
+			setRetJSON(&ctx, "{}", err)
+			return
+		}
 		resp, err := srv.GetArticles(&ctx, req)
 		setRetJSON(&ctx, resp, err)
 	}
@@ -64,6 +97,11 @@ func _BlogService_CreateArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g 
 	return func(g *gin.Context) {
 		req := &Article{}
 		ctx := api.NewContext(g)
+		err := checkValidate(&ctx, req)
+		if err != nil {
+			setRetJSON(&ctx, "{}", err)
+			return
+		}
 		resp, err := srv.CreateArticle(&ctx, req)
 		setRetJSON(&ctx, resp, err)
 	}

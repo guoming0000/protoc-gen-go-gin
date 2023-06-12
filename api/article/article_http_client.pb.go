@@ -7,19 +7,16 @@
 package article
 
 import (
-	sonic "github.com/bytedance/sonic"
-	api "github.com/sunmi-OS/gocore/v2/api"
-	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
+	context "context"
 	http_request "github.com/sunmi-OS/gocore/v2/utils/http-request"
-	http "net/http"
 )
 
 // BlogServiceHTTPClient is the client API for BlogService service.
 type BlogServiceHTTPClient interface {
 	// 获取文章列表 | 可以读取不多于999个文章列表
-	GetArticles(*api.Context, *GetArticlesReq) (*GetArticlesReply, error)
+	GetArticles(context.Context, *GetArticlesReq) (*TResponse[GetArticlesReply], error)
 	// 新建文章
-	CreateArticle(*api.Context, *Article) (*Article, error)
+	CreateArticle(context.Context, *Article) (*TResponse[Article], error)
 }
 
 type BlogServiceHTTPClientImpl struct {
@@ -30,34 +27,26 @@ func NewBlogServiceHTTPClient(hh *http_request.HttpClient) BlogServiceHTTPClient
 	return &BlogServiceHTTPClientImpl{hh: hh}
 }
 
-// will move to gocore
-func unmarshal(data interface{}, v interface{}) error {
-	if str, ok := data.([]byte); ok {
-		err := sonic.Unmarshal(str, v)
-		if err != nil {
-			return ecode.NewV2(http.StatusBadRequest, err.Error())
-		}
-		return nil
-	}
-	return ecode.NewV2(http.StatusBadRequest, "data type error")
+type TResponse[T any] struct {
+	Code int    `json:"code"`
+	Data *T     `json:"data"`
+	Msg  string `json:"msg"`
 }
 
-func (c *BlogServiceHTTPClientImpl) GetArticles(ctx *api.Context, req *GetArticlesReq) (*GetArticlesReply, error) {
-	resp := &GetArticlesReply{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(ctx.R).SetResult(resp).Post("/v1/articles")
+func (c *BlogServiceHTTPClientImpl) GetArticles(ctx context.Context, req *GetArticlesReq) (*TResponse[GetArticlesReply], error) {
+	resp := &TResponse[GetArticlesReply]{}
+	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/articles")
 	if err != nil {
 		return nil, err
 	}
-	err = unmarshal(ctx.R.Data, resp)
 	return resp, err
 }
 
-func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx *api.Context, req *Article) (*Article, error) {
-	resp := &Article{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(ctx.R).SetResult(resp).Post("/v1/author/:author_id/articles")
+func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx context.Context, req *Article) (*TResponse[Article], error) {
+	resp := &TResponse[Article]{}
+	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/author/:author_id/articles")
 	if err != nil {
 		return nil, err
 	}
-	err = unmarshal(ctx.R.Data, resp)
 	return resp, err
 }

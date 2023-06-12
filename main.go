@@ -46,11 +46,13 @@ func main() {
 
 const (
 	gocoreApi    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	ecodePackage = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	utilsPacakge = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
 	httpRequest  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
 	ginPackage   = protogen.GoImportPath("github.com/gin-gonic/gin")
 	sonicPackage = protogen.GoImportPath("github.com/bytedance/sonic")
 	httpPackage  = protogen.GoImportPath("net/http")
-	ecodePackage = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	ctxPackage   = protogen.GoImportPath("context")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -172,18 +174,18 @@ func generateHttpClientContent(file *protogen.File, g *protogen.GeneratedFile) {
 }
 
 func serverSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
+	ret := "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
 	var reqArgs []string
-	ret := "error"
-	if !method.Desc.IsStreamingClient() && !method.Desc.IsStreamingServer() {
-		reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(gocoreApi.Ident("Context")))
-		ret = "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
-	}
-	if !method.Desc.IsStreamingClient() {
-		reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(method.Input.GoIdent))
-	}
-	if method.Desc.IsStreamingClient() || method.Desc.IsStreamingServer() {
-		reqArgs = append(reqArgs, method.Parent.GoName+"_"+method.GoName+"Server")
-	}
+	reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(gocoreApi.Ident("Context")))
+	reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(method.Input.GoIdent))
+	return method.GoName + "(" + strings.Join(reqArgs, ", ") + ") " + ret
+}
+
+func clientSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
+	ret := "(*TResponse[" + g.QualifiedGoIdent(method.Output.GoIdent) + "], error)"
+	var reqArgs []string
+	reqArgs = append(reqArgs, g.QualifiedGoIdent(ctxPackage.Ident("Context")))
+	reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(method.Input.GoIdent))
 	return method.GoName + "(" + strings.Join(reqArgs, ", ") + ") " + ret
 }
 
@@ -231,17 +233,27 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 
 	g.P(`var validateErr error
 
-	func OpenAutoValidate(validatErr error) {
+	func SetAutoValidate(validatErr error) {
 		validateErr = validatErr
 	}
+	`)
 
-	func checkValidate(ctx *api.Context, req interface{}) error {
-		if validateErr != nil {
-			err0 := ctx.BindValidator(req)
-			if err0 != nil {
-				setRetJSON(ctx, nil, validateErr)
-				return validateErr
+	g.P(`func checkValidate(ctx *api.Context, req interface{}) error {
+		err0 := ctx.ShouldBind(req)
+		if err0 != nil {
+			if validateErr != nil {`)
+	g.P("if ", utilsPacakge.Ident("IsRelease"), "() {")
+	g.P("return validateErr")
+	g.P("}")
+	g.P("err1:=", ecodePackage.Ident("FromError"), "(validateErr)")
+	g.P(`err1.Status.Message = err1.Status.Message + "(" + err0.Error() + ")"
+				return err1
 			}
+
+			if utils.IsRelease() {
+				return api.ErrorBind
+			}
+			return err0
 		}
 		return nil
 	}`)
@@ -251,12 +263,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	if flag, ok := ctx.C.Value(XLocalCustomReturn).(bool); ok && flag {
 		return
 	}
-	if err != nil {
-		ctx.RetJSON(nil, err)
-		return
-	}
-	ctx.RetJSON(resp, nil)
-	return
+	ctx.RetJSON(resp, err)
 	}`)
 	g.P()
 
@@ -273,7 +280,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P(`ctx := api.NewContext(g)
 			err := checkValidate(&ctx, req)
 			if err != nil {
-				setRetJSON(&ctx, nil, err)
+				setRetJSON(&ctx, "{}", err)
 				return
 		}`)
 		g.P("resp, err := srv.", m.Name, "(&ctx, req)")
@@ -298,9 +305,7 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 			continue
 		}
 		g.Annotate(serverType+"."+m.GoName, m.Location)
-		if m.Desc.Options().(*descriptorpb.MethodOptions).GetDeprecated() {
-		}
-		g.P(m.Comments.Leading, serverSignature(g, m))
+		g.P(m.Comments.Leading, clientSignature(g, m))
 	}
 	g.P("}")
 	g.P()
@@ -329,39 +334,21 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("}")
 	g.P()
 
-	g.P(fmt.Sprintf(`// will move to gocore
-		func unmarshal(data interface{}, v interface{}) error {
-			if str, ok := data.([]byte); ok {
-				err := %v(str, v)
-				if err != nil {
-					return %v(%v, err.Error())
-				}
-				return nil
-			}
-			return %v(%v, "data type error")
-		}`, g.QualifiedGoIdent(sonicPackage.Ident("Unmarshal")),
-		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")), g.QualifiedGoIdent(httpPackage.Ident("StatusBadRequest")),
-		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")), g.QualifiedGoIdent(httpPackage.Ident("StatusBadRequest"))))
-	g.P()
-
-	g.P(`func IsDataTypeError(err error) bool {
-		e2 := ecode.FromError(err)
-		return e2.Code() == http.StatusBadRequest && e2.Message() == "data type error"
-	}`)
+	// TResponse
+	g.P("type TResponse[T any] struct {\n\tCode int    `json:\"code\"`\n\tData *T     `json:\"data\"`\n\tMsg  string `json:\"msg\"`\n}")
 	g.P()
 
 	// http method func
 	for _, m := range methods {
 		// func (c *XXXHttpClientImpl) XXX(ctx *Context, req *XXXRequest) (*XXXResponse, error)
-		g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx *", gocoreApi.Ident("Context"), ", req *", m.Request, ") (*", m.Reply, ", error) {")
-		g.P("resp := &", m.Reply, "{}")
-		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(ctx.R).SetResult(resp).Post(\"", m.Path, "\")")
+		g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*TResponse[", m.Reply, "], error) {")
+		g.P("resp := &TResponse[", m.Reply, "]{}")
+		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
 		g.P(`if err != nil {
-			return nil, err
-		}
-		err = unmarshal(ctx.R.Data, resp)`)
-		g.P("return resp, err")
-		g.P("}")
+				return nil, err
+			}
+			return resp, err
+		}`)
 		g.P()
 	}
 }
