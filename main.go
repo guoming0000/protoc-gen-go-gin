@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
-const version = "0.0.1"
+const version = "0.0.2"
 
 func main() {
 	showVersion := flag.Bool("version", false, "print the version and exit")
@@ -45,14 +45,16 @@ func main() {
 }
 
 const (
-	gocoreApi    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
-	ecodePackage = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
-	utilsPacakge = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
-	httpRequest  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
-	ginPackage   = protogen.GoImportPath("github.com/gin-gonic/gin")
-	sonicPackage = protogen.GoImportPath("github.com/bytedance/sonic")
-	httpPackage  = protogen.GoImportPath("net/http")
-	ctxPackage   = protogen.GoImportPath("context")
+	gocoreApi       = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	ecodePackage    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	utilsPacakge    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
+	httpRequest     = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
+	ginPackage      = protogen.GoImportPath("github.com/gin-gonic/gin")
+	sonicPackage    = protogen.GoImportPath("github.com/bytedance/sonic")
+	httpPackage     = protogen.GoImportPath("net/http")
+	ctxPackage      = protogen.GoImportPath("context")
+	strconvPackage  = protogen.GoImportPath("strconv")
+	metadataPackage = protogen.GoImportPath("google.golang.org/grpc/metadata")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -232,9 +234,11 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P()
 
 	g.P(`var validateErr error
+	var releaseShowDetail bool
 
-	func SetAutoValidate(validatErr error) {
+	func SetAutoValidate(validatErr error, releaseShowDetail bool) {
 		validateErr = validatErr
+		releaseShowDetail = releaseShowDetail
 	}
 	`)
 
@@ -242,7 +246,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		err0 := ctx.ShouldBind(req)
 		if err0 != nil {
 			if validateErr != nil {`)
-	g.P("if ", utilsPacakge.Ident("IsRelease"), "() {")
+	g.P("if ", utilsPacakge.Ident("IsRelease"), "() && !releaseShowDetail {")
 	g.P("return validateErr")
 	g.P("}")
 	g.P("err1:=", ecodePackage.Ident("FromError"), "(validateErr)")
@@ -250,7 +254,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 				return err1
 			}
 
-			if utils.IsRelease() {
+			if utils.IsRelease() && !releaseShowDetail {
 				return api.ErrorBind
 			}
 			return err0
@@ -259,17 +263,43 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	}`)
 	g.P()
 
+	g.P(`const customReturnKey = "sumi_custom_return"
+
+	func SetCustomReturn(ctx *api.Context, flag bool) {
+		c := ctx.Request.Context()
+		md, ok := metadata.FromIncomingContext(c)
+		if ok {
+			md.Set(customReturnKey, []string{strconv.FormatBool(flag)}...)
+		} else {
+			md = metadata.Pairs(customReturnKey, strconv.FormatBool(flag))
+		}
+		c = metadata.NewIncomingContext(c, md)
+		ctx.Request = ctx.Request.WithContext(c)
+	}`)
+	g.P()
+
+	g.P(`func GetCustomReturn(ctx *api.Context) bool {
+	c := ctx.Request.Context()`)
+	g.P("md, ok := ", metadataPackage.Ident("FromIncomingContext"), "(c)")
+	g.P("if ok {")
+	g.P("flag, err := ", strconvPackage.Ident("ParseBool"), "(md.Get(customReturnKey)[0])")
+	g.P(`if err != nil {
+				return false
+			}
+			return flag
+		}
+		return false
+	}`)
+	g.P()
+
 	g.P(`func setRetJSON(ctx *api.Context, resp interface{}, err error) {
-	if flag, ok := ctx.C.Value(XLocalCustomReturn).(bool); ok && flag {
+	if GetCustomReturn(ctx) {
 		return
 	}
 	ctx.RetJSON(resp, err)
 	}`)
 	g.P()
 
-	g.P("const (")
-	g.P(`XLocalCustomReturn = "x-local-custom-return"`)
-	g.P(")")
 	g.P()
 
 	// http method func
