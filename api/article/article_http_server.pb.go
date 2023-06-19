@@ -9,10 +9,6 @@ package article
 import (
 	gin "github.com/gin-gonic/gin"
 	api "github.com/sunmi-OS/gocore/v2/api"
-	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
-	utils "github.com/sunmi-OS/gocore/v2/utils"
-	metadata "google.golang.org/grpc/metadata"
-	strconv "strconv"
 )
 
 // BlogServiceHTTPServer is the server API for BlogService service.
@@ -30,75 +26,14 @@ func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
 	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle0_HTTP_Handler(srv))
 }
 
-var validateErr error
-var releaseShowDetail bool
-
-func SetAutoValidate(validatErr error, releaseShowDetail bool) {
-	validateErr = validatErr
-	releaseShowDetail = releaseShowDetail
-}
-
-func checkValidate(ctx *api.Context, req interface{}) error {
-	err0 := ctx.ShouldBind(req)
-	if err0 != nil {
-		if validateErr != nil {
-			if utils.IsRelease() && !releaseShowDetail {
-				return validateErr
-			}
-			err1 := ecode.FromError(validateErr)
-			err1.Status.Message = err1.Status.Message + "(" + err0.Error() + ")"
-			return err1
-		}
-
-		if utils.IsRelease() && !releaseShowDetail {
-			return api.ErrorBind
-		}
-		return err0
-	}
-	return nil
-}
-
-const customReturnKey = "sumi_custom_return"
-
-func SetCustomReturn(ctx *api.Context, flag bool) {
-	c := ctx.Request.Context()
-	md, ok := metadata.FromIncomingContext(c)
-	if ok {
-		md.Set(customReturnKey, []string{strconv.FormatBool(flag)}...)
-	} else {
-		md = metadata.Pairs(customReturnKey, strconv.FormatBool(flag))
-	}
-	c = metadata.NewIncomingContext(c, md)
-	ctx.Request = ctx.Request.WithContext(c)
-}
-
-func GetCustomReturn(ctx *api.Context) bool {
-	c := ctx.Request.Context()
-	md, ok := metadata.FromIncomingContext(c)
-	if ok {
-		flag, err := strconv.ParseBool(md.Get(customReturnKey)[0])
-		if err != nil {
-			return false
-		}
-		return flag
-	}
-	return false
-}
-
-func setRetJSON(ctx *api.Context, resp interface{}, err error) {
-	if GetCustomReturn(ctx) {
-		return
-	}
-	ctx.RetJSON(resp, err)
-}
-
 func _BlogService_GetArticles0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
-		err := checkValidate(&ctx, req)
+		err := ctx.ShouldBind(req)
+		err = checkValidate(err)
 		if err != nil {
-			setRetJSON(&ctx, "{}", err)
+			setRetJSON(&ctx, nil, err)
 			return
 		}
 		resp, err := srv.GetArticles(&ctx, req)
@@ -110,9 +45,10 @@ func _BlogService_GetArticles1_HTTP_Handler(srv BlogServiceHTTPServer) func(g *g
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
-		err := checkValidate(&ctx, req)
+		err := ctx.ShouldBind(req)
+		err = checkValidate(err)
 		if err != nil {
-			setRetJSON(&ctx, "{}", err)
+			setRetJSON(&ctx, nil, err)
 			return
 		}
 		resp, err := srv.GetArticles(&ctx, req)
@@ -124,9 +60,10 @@ func _BlogService_CreateArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g 
 	return func(g *gin.Context) {
 		req := &Article{}
 		ctx := api.NewContext(g)
-		err := checkValidate(&ctx, req)
+		err := ctx.ShouldBind(req)
+		err = checkValidate(err)
 		if err != nil {
-			setRetJSON(&ctx, "{}", err)
+			setRetJSON(&ctx, nil, err)
 			return
 		}
 		resp, err := srv.CreateArticle(&ctx, req)

@@ -21,16 +21,12 @@ type blogServiceHttpServer struct {
 }
 
 func (b *blogServiceHttpServer) GetArticles(context *api.Context, req *GetArticlesReq) (*GetArticlesReply, error) {
-	req.Validate()
 	return &GetArticlesReply{
 		Total: 775755,
 	}, nil
 }
 
 func (b *blogServiceHttpServer) CreateArticle(context *api.Context, a *Article) (*Article, error) {
-	if err := a.Validate(); err != nil {
-		return nil, ErrProductNotFound()
-	}
 	return &Article{
 		Title:    "6666",
 		Content:  "content",

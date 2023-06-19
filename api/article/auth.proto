@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "api/article";
+
+import "google/api/annotations.proto";
+
+service AuthService {
+  rpc Push(PushReq) returns (PushReply)  { option (google.api.http) = { post: "/private/push"}; }
+}
+
+message PushReq {
+}
+
+message PushReply {
+}

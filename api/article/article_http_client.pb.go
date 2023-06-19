@@ -27,12 +27,6 @@ func NewBlogServiceHTTPClient(hh *http_request.HttpClient) BlogServiceHTTPClient
 	return &BlogServiceHTTPClientImpl{hh: hh}
 }
 
-type TResponse[T any] struct {
-	Code int    `json:"code"`
-	Data *T     `json:"data"`
-	Msg  string `json:"msg"`
-}
-
 func (c *BlogServiceHTTPClientImpl) GetArticles(ctx context.Context, req *GetArticlesReq) (*TResponse[GetArticlesReply], error) {
 	resp := &TResponse[GetArticlesReply]{}
 	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/articles")

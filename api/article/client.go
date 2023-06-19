@@ -16,7 +16,7 @@ import (
 var ErrIncorrectCode = errors.New("incorrect http status")
 
 func MustCode200(cli *resty.Client, resp *resty.Response) error {
-	if resp.StatusCode() == http.StatusOK {
+	if resp.StatusCode() != http.StatusOK {
 		return fmt.Errorf("%w:%d", ErrIncorrectCode, resp.StatusCode())
 	}
 	return nil

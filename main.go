@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"google.golang.org/genproto/googleapis/api/annotations"
@@ -33,6 +34,8 @@ func main() {
 			if !f.Generate {
 				continue
 			}
+			// {dirname}_ext.pb.go
+			generateExtFile(gen, f)
 			// {package_name}_http_server.pb.go
 			generateHttpServer(gen, f)
 			// {package_name}_http_client.pb.go
@@ -72,6 +75,90 @@ func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *pro
 	g.P()
 }
 
+func generateExtFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
+	if len(file.Services) == 0 {
+		return nil
+	}
+	// printErr("%#v", file)
+	extFilename := string(file.GoImportPath) + "/" + path.Base(string(file.GoImportPath)) + "_ext.pb.go"
+	g := gen.NewGeneratedFile(extFilename, file.GoImportPath)
+	generateFileHeader(g, file, gen)
+	generateExtContent(file, g)
+	return g
+}
+
+// generateExtContent generates the http service definitions, excluding the package statement.
+func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
+	if len(file.Services) == 0 {
+		return
+	}
+
+	// TResponse
+	g.P("type TResponse[T any] struct {\n\tCode int    `json:\"code\"`\n\tData *T     `json:\"data\"`\n\tMsg  string `json:\"msg\"`\n}")
+	g.P()
+
+	g.P("var validateErr error = ", gocoreApi.Ident("ErrorBind"))
+	g.P(`var releaseShowDetail bool
+	var disableValidate bool
+
+	// set you error or use api.ErrorBind(diable:是否启用自动validate, 如果启用则返回 validateErr or 原始错误)
+	func SetAutoValidate(disable bool, validatErr error, releaseShowDetail bool) {
+		disableValidate = disable
+		validateErr = validatErr
+		releaseShowDetail = releaseShowDetail
+	}
+	`)
+
+	g.P(`func checkValidate(err error) error {
+		if disableValidate || err == nil {
+			return nil
+	}`)
+	g.P("if ", utilsPacakge.Ident("IsRelease"), "() && !releaseShowDetail {")
+	g.P(`return validateErr
+		}
+		return err
+	}`)
+	g.P()
+
+	g.P(`const customReturnKey = "sumi_custom_return"
+
+	func SetCustomReturn(ctx *api.Context, flag bool) {
+		c := ctx.Request.Context()
+		md, ok := metadata.FromIncomingContext(c)
+		if ok {
+			md.Set(customReturnKey, []string{strconv.FormatBool(flag)}...)
+		} else {
+			md = metadata.Pairs(customReturnKey, strconv.FormatBool(flag))
+		}
+		c = metadata.NewIncomingContext(c, md)
+		ctx.Request = ctx.Request.WithContext(c)
+	}`)
+	g.P()
+
+	g.P(`func GetCustomReturn(ctx *api.Context) bool {
+	c := ctx.Request.Context()`)
+	g.P("md, ok := ", metadataPackage.Ident("FromIncomingContext"), "(c)")
+	g.P("if ok {")
+	g.P("flag, err := ", strconvPackage.Ident("ParseBool"), "(md.Get(customReturnKey)[0])")
+	g.P(`if err != nil {
+				return false
+			}
+			return flag
+		}
+		return false
+	}`)
+	g.P()
+
+	g.P(`func setRetJSON(ctx *api.Context, resp interface{}, err error) {
+	if GetCustomReturn(ctx) {
+		return
+	}
+	ctx.RetJSON(resp, err)
+	}`)
+	g.P()
+
+}
+
 // generateFile generates a _grpc.pb.go file containing gRPC service definitions.
 func generateHttpServer(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
 	if len(file.Services) == 0 {
@@ -84,9 +171,6 @@ func generateHttpServer(gen *protogen.Plugin, file *protogen.File) *protogen.Gen
 }
 
 func generateJsonFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
-	if len(file.Services) == 0 {
-		return nil
-	}
 	filename := file.GeneratedFilenamePrefix + "_json.pb.go"
 	g := gen.NewGeneratedFile(filename, file.GoImportPath)
 	generateFileHeader(g, file, gen)
@@ -233,84 +317,16 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("}")
 	g.P()
 
-	g.P(`var validateErr error
-	var releaseShowDetail bool
-
-	func SetAutoValidate(validatErr error, releaseShowDetail bool) {
-		validateErr = validatErr
-		releaseShowDetail = releaseShowDetail
-	}
-	`)
-
-	g.P(`func checkValidate(ctx *api.Context, req interface{}) error {
-		err0 := ctx.ShouldBind(req)
-		if err0 != nil {
-			if validateErr != nil {`)
-	g.P("if ", utilsPacakge.Ident("IsRelease"), "() && !releaseShowDetail {")
-	g.P("return validateErr")
-	g.P("}")
-	g.P("err1:=", ecodePackage.Ident("FromError"), "(validateErr)")
-	g.P(`err1.Status.Message = err1.Status.Message + "(" + err0.Error() + ")"
-				return err1
-			}
-
-			if utils.IsRelease() && !releaseShowDetail {
-				return api.ErrorBind
-			}
-			return err0
-		}
-		return nil
-	}`)
-	g.P()
-
-	g.P(`const customReturnKey = "sumi_custom_return"
-
-	func SetCustomReturn(ctx *api.Context, flag bool) {
-		c := ctx.Request.Context()
-		md, ok := metadata.FromIncomingContext(c)
-		if ok {
-			md.Set(customReturnKey, []string{strconv.FormatBool(flag)}...)
-		} else {
-			md = metadata.Pairs(customReturnKey, strconv.FormatBool(flag))
-		}
-		c = metadata.NewIncomingContext(c, md)
-		ctx.Request = ctx.Request.WithContext(c)
-	}`)
-	g.P()
-
-	g.P(`func GetCustomReturn(ctx *api.Context) bool {
-	c := ctx.Request.Context()`)
-	g.P("md, ok := ", metadataPackage.Ident("FromIncomingContext"), "(c)")
-	g.P("if ok {")
-	g.P("flag, err := ", strconvPackage.Ident("ParseBool"), "(md.Get(customReturnKey)[0])")
-	g.P(`if err != nil {
-				return false
-			}
-			return flag
-		}
-		return false
-	}`)
-	g.P()
-
-	g.P(`func setRetJSON(ctx *api.Context, resp interface{}, err error) {
-	if GetCustomReturn(ctx) {
-		return
-	}
-	ctx.RetJSON(resp, err)
-	}`)
-	g.P()
-
-	g.P()
-
 	// http method func
 	for _, m := range methods {
 		g.P("func ", httpHandlerName(service.GoName, m.Name, m.Num), "(srv ", serverType, ") func(g *gin.Context) {")
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
 		g.P(`ctx := api.NewContext(g)
-			err := checkValidate(&ctx, req)
+			err := ctx.ShouldBind(req)
+			err = checkValidate(err)
 			if err != nil {
-				setRetJSON(&ctx, "{}", err)
+				setRetJSON(&ctx, nil, err)
 				return
 		}`)
 		g.P("resp, err := srv.", m.Name, "(&ctx, req)")
@@ -362,10 +378,6 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("func New", serverType, "(hh *", httpRequest.Ident("HttpClient"), ") ", serverType, " {")
 	g.P("return &", serverType, "Impl{hh: hh}")
 	g.P("}")
-	g.P()
-
-	// TResponse
-	g.P("type TResponse[T any] struct {\n\tCode int    `json:\"code\"`\n\tData *T     `json:\"data\"`\n\tMsg  string `json:\"msg\"`\n}")
 	g.P()
 
 	// http method func

@@ -4,11 +4,12 @@ go 1.18
 
 require (
 	github.com/bytedance/sonic v1.8.10
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/sunmi-OS/gocore/v2 v2.1.11
+	golang.org/x/text v0.7.0
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
+	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -59,8 +60,6 @@ require (
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
-	google.golang.org/grpc v1.44.0 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
