@@ -15,17 +15,14 @@ go install github.com/guoming0000/protoc-gen-go-gin@latest
 # protoc-gen-go-errors (生成{package}_ecode.pb.go)
 go install github.com/guoming0000/protoc-gen-go-gin/protoc-gen-go-errors@latest
   
-# protoc-gen-validate（生成validate)
-go install github.com/envoyproxy/protoc-gen-validate@latest
-
 # 拷贝third_party目录(protoc-gen-go-gin和protoc-gen-validate会用到)
-git clone git@github.com:guoming0000/protoc-gen-go-gin.git
+git clone https://github.com/guoming0000/protoc-gen-go-gin.git
 cp -r protoc-gen-go-gin/third_party $(go env GOPATH)/pkg/mod/github.com/guoming0000/
 ```
 
 ## 使用
 ```bash
-protoc -I. -I ./third_party --go-gin_out=./ --go_out=./ --validate_out=lang=go:./ api/article.proto
+protoc -I. -I ./third_party --go-gin_out=./ --go_out=./  api/article.proto
 
 protoc --go-errors_out=./ api/article_error.proto
 
@@ -33,16 +30,16 @@ protoc -I. -I ./third_party --openapiv2_out . --openapiv2_opt logtostderr=true -
 ```
 
 proto demo
-https://github.com/guoming0000/protoc-gen-go-gin/blob/main/proto/article.proto
+https://github.com/guoming0000/protoc-gen-go-gin/blob/main/api/article/article.proto
 
 生成后的文件demo
-https://github.com/guoming0000/protoc-gen-go-gin/tree/main/api/v1/article
+https://github.com/guoming0000/protoc-gen-go-gin/blob/main/api/article/
 
 server使用demo：
-https://github.com/guoming0000/protoc-gen-go-gin/blob/main/api/articleserver_test.go
+https://github.com/guoming0000/protoc-gen-go-gin/blob/main/api/article/articleserver_test.go
 
 client使用demo：
-https://github.com/guoming0000/protoc-gen-go-gin/blob/main/api/v1/article/client.go
+https://github.com/guoming0000/protoc-gen-go-gin/blob/main/api/article/client.go
 
 ## struct转proto定义方法
 和chatgpt聊天，话术如下：
@@ -62,3 +59,4 @@ type GetArticlesReq struct {
 ## TODO
 - [x] 支持proto-gen-error-go
 - [x] 支持自定义错误码
+- [x] 支持gin形式的binding参数校验方法

@@ -40,7 +40,7 @@ func checkValidate(err error) error {
 	return err
 }
 
-const customReturnKey = "sumi_custom_return"
+const customReturnKey = "x-md-local-customreturn"
 
 func SetCustomReturn(ctx *api.Context, flag bool) {
 	c := ctx.Request.Context()

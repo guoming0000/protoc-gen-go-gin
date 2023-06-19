@@ -120,7 +120,7 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}`)
 	g.P()
 
-	g.P(`const customReturnKey = "sumi_custom_return"
+	g.P(`const customReturnKey = "x-md-local-customreturn"
 
 	func SetCustomReturn(ctx *api.Context, flag bool) {
 		c := ctx.Request.Context()
