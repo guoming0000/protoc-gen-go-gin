@@ -19,15 +19,11 @@ func (m *GetArticlesReq) MarshalString() (string, error) {
 }
 
 func (m *GetArticlesReq) Unmarshal(buf []byte) error {
-	m = new(GetArticlesReq)
-	err := sonic.Unmarshal(buf, m)
-	return err
+	return sonic.Unmarshal(buf, m)
 }
 
 func (m *GetArticlesReq) UnmarshalString(str string) error {
-	m = new(GetArticlesReq)
-	err := sonic.UnmarshalString(str, m)
-	return err
+	return sonic.UnmarshalString(str, m)
 }
 
 func (m *GetArticlesReply) Marshal() ([]byte, error) {
@@ -39,15 +35,11 @@ func (m *GetArticlesReply) MarshalString() (string, error) {
 }
 
 func (m *GetArticlesReply) Unmarshal(buf []byte) error {
-	m = new(GetArticlesReply)
-	err := sonic.Unmarshal(buf, m)
-	return err
+	return sonic.Unmarshal(buf, m)
 }
 
 func (m *GetArticlesReply) UnmarshalString(str string) error {
-	m = new(GetArticlesReply)
-	err := sonic.UnmarshalString(str, m)
-	return err
+	return sonic.UnmarshalString(str, m)
 }
 
 func (m *Article) Marshal() ([]byte, error) {
@@ -59,13 +51,9 @@ func (m *Article) MarshalString() (string, error) {
 }
 
 func (m *Article) Unmarshal(buf []byte) error {
-	m = new(Article)
-	err := sonic.Unmarshal(buf, m)
-	return err
+	return sonic.Unmarshal(buf, m)
 }
 
 func (m *Article) UnmarshalString(str string) error {
-	m = new(Article)
-	err := sonic.UnmarshalString(str, m)
-	return err
+	return sonic.UnmarshalString(str, m)
 }

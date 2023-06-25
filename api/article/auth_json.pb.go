@@ -19,15 +19,11 @@ func (m *PushReq) MarshalString() (string, error) {
 }
 
 func (m *PushReq) Unmarshal(buf []byte) error {
-	m = new(PushReq)
-	err := sonic.Unmarshal(buf, m)
-	return err
+	return sonic.Unmarshal(buf, m)
 }
 
 func (m *PushReq) UnmarshalString(str string) error {
-	m = new(PushReq)
-	err := sonic.UnmarshalString(str, m)
-	return err
+	return sonic.UnmarshalString(str, m)
 }
 
 func (m *PushReply) Marshal() ([]byte, error) {
@@ -39,13 +35,9 @@ func (m *PushReply) MarshalString() (string, error) {
 }
 
 func (m *PushReply) Unmarshal(buf []byte) error {
-	m = new(PushReply)
-	err := sonic.Unmarshal(buf, m)
-	return err
+	return sonic.Unmarshal(buf, m)
 }
 
 func (m *PushReply) UnmarshalString(str string) error {
-	m = new(PushReply)
-	err := sonic.UnmarshalString(str, m)
-	return err
+	return sonic.UnmarshalString(str, m)
 }

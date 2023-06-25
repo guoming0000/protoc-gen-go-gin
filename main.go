@@ -202,20 +202,16 @@ func generateJsonContent(file *protogen.File, g *protogen.GeneratedFile) {
 		}
 
 		func (m *%s)Unmarshal(buf []byte) (error) {
-			m = new(%s)
-			err := %s(buf, m)
-			return err
+			return %s(buf, m)
 		}
 
 		func (m *%s)UnmarshalString(str string) (error) {
-			m = new(%s)
-			err := %s(str, m)
-			return err
+			return %s(str, m)
 		}
 		`, name, g.QualifiedGoIdent(sonicPackage.Ident("Marshal")),
 			name, g.QualifiedGoIdent(sonicPackage.Ident("MarshalString")),
-			name, name, g.QualifiedGoIdent(sonicPackage.Ident("Unmarshal")),
-			name, name, g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
+			name, g.QualifiedGoIdent(sonicPackage.Ident("Unmarshal")),
+			name, g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
 		))
 		g.P()
 	}
