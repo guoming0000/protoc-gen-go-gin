@@ -25,7 +25,7 @@ func _AuthService_Push0_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Cont
 	return func(g *gin.Context) {
 		req := &PushReq{}
 		ctx := api.NewContext(g)
-		err := ctx.ShouldBind(req)
+		err := ctx.ShouldBindJSON(req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)

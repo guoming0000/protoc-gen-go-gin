@@ -30,7 +30,7 @@ func _BlogService_GetArticles0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *g
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
-		err := ctx.ShouldBind(req)
+		err := ctx.ShouldBindJSON(req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
@@ -45,7 +45,7 @@ func _BlogService_GetArticles1_HTTP_Handler(srv BlogServiceHTTPServer) func(g *g
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
-		err := ctx.ShouldBind(req)
+		err := ctx.ShouldBindJSON(req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
@@ -60,7 +60,7 @@ func _BlogService_CreateArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g 
 	return func(g *gin.Context) {
 		req := &Article{}
 		ctx := api.NewContext(g)
-		err := ctx.ShouldBind(req)
+		err := ctx.ShouldBindJSON(req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
