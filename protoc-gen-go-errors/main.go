@@ -66,7 +66,7 @@ func generateErrors(gen *protogen.Plugin, file *protogen.File) *protogen.Generat
 	if len(file.Enums) == 0 {
 		return nil
 	}
-	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+"_ecode.pb.go", file.GoImportPath)
+	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+".pb.go", file.GoImportPath)
 	generateFileHeader(g, file, gen)
 	generateErrorsContent(file, g)
 	return g
