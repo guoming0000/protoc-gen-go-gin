@@ -171,8 +171,7 @@ func generateHttpServer(gen *protogen.Plugin, file *protogen.File) *protogen.Gen
 }
 
 func generateJsonFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
-	filename := file.GeneratedFilenamePrefix + "_json.pb.go"
-	g := gen.NewGeneratedFile(filename, file.GoImportPath)
+	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+"_json.pb.go", file.GoImportPath)
 	generateFileHeader(g, file, gen)
 	generateJsonContent(file, g)
 	return g
@@ -298,9 +297,9 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		rule, ok := proto.GetExtension(m.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
 		if rule != nil && ok {
 			for _, bind := range rule.AdditionalBindings {
-				methods = append(methods, buildHTTPRule(m, bind))
+				methods = append(methods, buildHTTPRule(g, m, bind))
 			}
-			methods = append(methods, buildHTTPRule(m, rule))
+			methods = append(methods, buildHTTPRule(g, m, rule))
 		}
 	}
 
@@ -360,7 +359,7 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 			//for _, bind := range rule.AdditionalBindings {
 			//	methods = append(methods, buildHTTPRule(m, bind))
 			//}
-			methods = append(methods, buildHTTPRule(m, rule))
+			methods = append(methods, buildHTTPRule(g, m, rule))
 		}
 	}
 
@@ -437,22 +436,22 @@ func (m *method) initPathParams() {
 
 var methodSets = make(map[string]int)
 
-func buildHTTPRule(m *protogen.Method, rule *annotations.HttpRule) *method {
+func buildHTTPRule(g *protogen.GeneratedFile, m *protogen.Method, rule *annotations.HttpRule) *method {
 	path, ok := rule.Pattern.(*annotations.HttpRule_Post)
 	if !ok {
 		panic("method not support")
 	}
-	md := buildMethodDesc(m, "POST", path.Post)
+	md := buildMethodDesc(g, m, "POST", path.Post)
 	return md
 }
 
-func buildMethodDesc(m *protogen.Method, httpMethod, path string) *method {
+func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, httpMethod, path string) *method {
 	defer func() { methodSets[m.GoName]++ }()
 	md := &method{
 		Name:    m.GoName,
 		Num:     methodSets[m.GoName],
-		Request: m.Input.GoIdent.GoName,
-		Reply:   m.Output.GoIdent.GoName,
+		Request: g.QualifiedGoIdent(m.Input.GoIdent),
+		Reply:   g.QualifiedGoIdent(m.Output.GoIdent),
 		Path:    path,
 		Method:  httpMethod,
 	}
