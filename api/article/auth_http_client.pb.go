@@ -14,6 +14,7 @@ import (
 // AuthServiceHTTPClient is the client API for AuthService service.
 type AuthServiceHTTPClient interface {
 	Push(context.Context, *PushReq) (*TResponse[PushReply], error)
+	Pull(context.Context, *PushReq) (*TResponse[UploadOssdk3RdReq], error)
 }
 
 type AuthServiceHTTPClientImpl struct {
@@ -26,6 +27,15 @@ func NewAuthServiceHTTPClient(hh *http_request.HttpClient) AuthServiceHTTPClient
 
 func (c *AuthServiceHTTPClientImpl) Push(ctx context.Context, req *PushReq) (*TResponse[PushReply], error) {
 	resp := &TResponse[PushReply]{}
+	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/private/push")
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq) (*TResponse[UploadOssdk3RdReq], error) {
+	resp := &TResponse[UploadOssdk3RdReq]{}
 	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/private/push")
 	if err != nil {
 		return nil, err

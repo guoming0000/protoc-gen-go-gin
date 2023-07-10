@@ -6,10 +6,18 @@ import "google/api/annotations.proto";
 
 service AuthService {
   rpc Push(PushReq) returns (PushReply)  { option (google.api.http) = { post: "/private/push"}; }
+  rpc Pull(PushReq) returns (UploadOssdk3rdReq)  { option (google.api.http) = { post: "/private/push"}; }
 }
 
 message PushReq {
 }
 
 message PushReply {
+}
+
+message UploadOssdk3rdReq {
+  string operator = 1;
+  string sdk_url_uuid = 2;
+  string sdk_os = 3;
+  string file_name = 4;
 }

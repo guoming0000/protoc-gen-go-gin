@@ -194,7 +194,7 @@ func generateHttpClient(gen *protogen.Plugin, file *protogen.File) *protogen.Gen
 // generate mashal/unmarshal method
 func generateJsonContent(file *protogen.File, g *protogen.GeneratedFile) {
 	for _, msg := range file.Messages {
-		name := msg.Desc.FullName().Name()
+		name := g.QualifiedGoIdent(msg.GoIdent)
 		g.P()
 		g.P(fmt.Sprintf(`func (m *%s) Marshal() ([]byte, error) {
 			return %s(m)

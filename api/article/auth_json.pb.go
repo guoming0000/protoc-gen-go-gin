@@ -41,3 +41,19 @@ func (m *PushReply) Unmarshal(buf []byte) error {
 func (m *PushReply) UnmarshalString(str string) error {
 	return sonic.UnmarshalString(str, m)
 }
+
+func (m *UploadOssdk3RdReq) Marshal() ([]byte, error) {
+	return sonic.Marshal(m)
+}
+
+func (m *UploadOssdk3RdReq) MarshalString() (string, error) {
+	return sonic.MarshalString(m)
+}
+
+func (m *UploadOssdk3RdReq) Unmarshal(buf []byte) error {
+	return sonic.Unmarshal(buf, m)
+}
+
+func (m *UploadOssdk3RdReq) UnmarshalString(str string) error {
+	return sonic.UnmarshalString(str, m)
+}

@@ -14,11 +14,13 @@ import (
 // AuthServiceHTTPServer is the server API for AuthService service.
 type AuthServiceHTTPServer interface {
 	Push(*api.Context, *PushReq) (*PushReply, error)
+	Pull(*api.Context, *PushReq) (*UploadOssdk3RdReq, error)
 }
 
 func RegisterAuthServiceHTTPServer(s *gin.Engine, srv AuthServiceHTTPServer) {
 	r := s.Group("/")
 	r.POST("/private/push", _AuthService_Push0_HTTP_Handler(srv))
+	r.POST("/private/push", _AuthService_Pull0_HTTP_Handler(srv))
 }
 
 func _AuthService_Push0_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
@@ -32,6 +34,21 @@ func _AuthService_Push0_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Cont
 			return
 		}
 		resp, err := srv.Push(&ctx, req)
+		setRetJSON(&ctx, resp, err)
+	}
+}
+
+func _AuthService_Pull0_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
+	return func(g *gin.Context) {
+		req := &PushReq{}
+		ctx := api.NewContext(g)
+		err := ctx.ShouldBindJSON(req)
+		err = checkValidate(err)
+		if err != nil {
+			setRetJSON(&ctx, nil, err)
+			return
+		}
+		resp, err := srv.Pull(&ctx, req)
 		setRetJSON(&ctx, resp, err)
 	}
 }

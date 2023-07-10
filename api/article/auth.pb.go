@@ -12,3 +12,10 @@ type PushReq struct {
 
 type PushReply struct {
 }
+
+type UploadOssdk3RdReq struct {
+	Operator   string `json:"operator,omitempty"`
+	SdkUrlUuid string `json:"sdk_url_uuid,omitempty"`
+	SdkOs      string `json:"sdk_os,omitempty"`
+	FileName   string `json:"file_name,omitempty"`
+}
