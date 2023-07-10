@@ -139,7 +139,11 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	c := ctx.Request.Context()`)
 	g.P("md, ok := ", metadataPackage.Ident("FromIncomingContext"), "(c)")
 	g.P("if ok {")
-	g.P("flag, err := ", strconvPackage.Ident("ParseBool"), "(md.Get(customReturnKey)[0])")
+	g.P(`vals := md.Get(customReturnKey)
+			if len(vals) == 0 {
+				return false
+	}`)
+	g.P("flag, err := ", strconvPackage.Ident("ParseBool"), "(vals[0])")
 	g.P(`if err != nil {
 				return false
 			}

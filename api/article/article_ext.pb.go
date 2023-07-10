@@ -58,7 +58,11 @@ func GetCustomReturn(ctx *api.Context) bool {
 	c := ctx.Request.Context()
 	md, ok := metadata.FromIncomingContext(c)
 	if ok {
-		flag, err := strconv.ParseBool(md.Get(customReturnKey)[0])
+		vals := md.Get(customReturnKey)
+		if len(vals) == 0 {
+			return false
+		}
+		flag, err := strconv.ParseBool(vals[0])
 		if err != nil {
 			return false
 		}
