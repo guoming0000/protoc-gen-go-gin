@@ -385,11 +385,14 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*TResponse[", m.Reply, "], error) {")
 		g.P("resp := &TResponse[", m.Reply, "]{}")
 		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
-		g.P(`if err != nil {
+		g.P(fmt.Sprintf(`if err != nil {
 				return nil, err
 			}
+			if resp.Code != 1 {
+				err = %v(resp.Code, resp.Msg)
+			}
 			return resp, err
-		}`)
+		}`, g.QualifiedGoIdent(ecodePackage.Ident("NewV2"))))
 		g.P()
 	}
 }

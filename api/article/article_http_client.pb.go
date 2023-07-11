@@ -8,6 +8,7 @@ package article
 
 import (
 	context "context"
+	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	http_request "github.com/sunmi-OS/gocore/v2/utils/http-request"
 )
 
@@ -33,6 +34,9 @@ func (c *BlogServiceHTTPClientImpl) GetArticles(ctx context.Context, req *GetArt
 	if err != nil {
 		return nil, err
 	}
+	if resp.Code != 1 {
+		err = ecode.NewV2(resp.Code, resp.Msg)
+	}
 	return resp, err
 }
 
@@ -41,6 +45,9 @@ func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx context.Context, req *Arti
 	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/author/:author_id/articles")
 	if err != nil {
 		return nil, err
+	}
+	if resp.Code != 1 {
+		err = ecode.NewV2(resp.Code, resp.Msg)
 	}
 	return resp, err
 }

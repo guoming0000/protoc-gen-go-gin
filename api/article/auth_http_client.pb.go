@@ -8,6 +8,7 @@ package article
 
 import (
 	context "context"
+	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	http_request "github.com/sunmi-OS/gocore/v2/utils/http-request"
 )
 
@@ -31,6 +32,9 @@ func (c *AuthServiceHTTPClientImpl) Push(ctx context.Context, req *PushReq) (*TR
 	if err != nil {
 		return nil, err
 	}
+	if resp.Code != 1 {
+		err = ecode.NewV2(resp.Code, resp.Msg)
+	}
 	return resp, err
 }
 
@@ -39,6 +43,9 @@ func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq) (*TR
 	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/private/push")
 	if err != nil {
 		return nil, err
+	}
+	if resp.Code != 1 {
+		err = ecode.NewV2(resp.Code, resp.Msg)
 	}
 	return resp, err
 }
