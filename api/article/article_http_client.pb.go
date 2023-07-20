@@ -18,7 +18,7 @@ type BlogServiceHTTPClient interface {
 	GetArticles(context.Context, *GetArticlesReq) (*TResponse[GetArticlesReply], error)
 	// 新建文章
 	CreateArticle(context.Context, *Article) (*TResponse[Article], error)
-	// 获取文章详情
+	// 获取文章详情(TODO get方法还未支持)
 	GetOneArticle(context.Context, *GetArticlesReq) (*TResponse[GetArticlesReply], error)
 }
 

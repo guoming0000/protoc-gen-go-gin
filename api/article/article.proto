@@ -12,7 +12,7 @@ service BlogService {
     rpc GetArticles(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { post: "/v1/articles" additional_bindings { post: "/v1/author/articles" } }; }
     // 新建文章
     rpc CreateArticle(Article) returns (Article) { option (google.api.http) = { post: "/v1/author/{author_id}/articles"}; }
-    // 获取文章详情
+    // 获取文章详情(TODO get方法还未支持)
     rpc GetOneArticle(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { get: "/v1/get/article"}; }
 }
 

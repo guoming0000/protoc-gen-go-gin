@@ -17,7 +17,7 @@ type BlogServiceHTTPServer interface {
 	GetArticles(*api.Context, *GetArticlesReq) (*GetArticlesReply, error)
 	// 新建文章
 	CreateArticle(*api.Context, *Article) (*Article, error)
-	// 获取文章详情
+	// 获取文章详情(TODO get方法还未支持)
 	GetOneArticle(*api.Context, *GetArticlesReq) (*GetArticlesReply, error)
 }
 
