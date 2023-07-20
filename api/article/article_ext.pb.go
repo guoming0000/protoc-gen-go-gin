@@ -40,7 +40,7 @@ func checkValidate(err error) error {
 
 const customReturnKey = "x-md-local-customreturn"
 
-func SetCustomReturn(ctx *api.Context, flag bool) {
+func SetCustomReturn(ctx *api.Context) {
 	c := ctx.Request.Context()
 	c = utils.SetMetaData(c, customReturnKey, "true")
 	ctx.Request = ctx.Request.WithContext(c)

@@ -120,7 +120,7 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 
 	g.P(`const customReturnKey = "x-md-local-customreturn"
 
-	func SetCustomReturn(ctx *api.Context, flag bool) {
+	func SetCustomReturn(ctx *api.Context) {
 		c := ctx.Request.Context()
 		c = utils.SetMetaData(c, customReturnKey, "true")
 		ctx.Request = ctx.Request.WithContext(c)
