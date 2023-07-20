@@ -17,6 +17,8 @@ type BlogServiceHTTPServer interface {
 	GetArticles(*api.Context, *GetArticlesReq) (*GetArticlesReply, error)
 	// 新建文章
 	CreateArticle(*api.Context, *Article) (*Article, error)
+	// 获取文章详情
+	GetOneArticle(*api.Context, *GetArticlesReq) (*GetArticlesReply, error)
 }
 
 func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
@@ -24,6 +26,7 @@ func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
 	r.POST("/v1/author/articles", _BlogService_GetArticles0_HTTP_Handler(srv))
 	r.POST("/v1/articles", _BlogService_GetArticles1_HTTP_Handler(srv))
 	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle0_HTTP_Handler(srv))
+	r.GET("/v1/get/article", _BlogService_GetOneArticle0_HTTP_Handler(srv))
 }
 
 func _BlogService_GetArticles0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
@@ -67,6 +70,21 @@ func _BlogService_CreateArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g 
 			return
 		}
 		resp, err := srv.CreateArticle(&ctx, req)
+		setRetJSON(&ctx, resp, err)
+	}
+}
+
+func _BlogService_GetOneArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
+	return func(g *gin.Context) {
+		req := &GetArticlesReq{}
+		ctx := api.NewContext(g)
+		err := ctx.ShouldBindJSON(req)
+		err = checkValidate(err)
+		if err != nil {
+			setRetJSON(&ctx, nil, err)
+			return
+		}
+		resp, err := srv.GetOneArticle(&ctx, req)
 		setRetJSON(&ctx, resp, err)
 	}
 }

@@ -6,7 +6,7 @@ require (
 	github.com/bytedance/sonic v1.9.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/sunmi-OS/gocore/v2 v2.1.15
+	github.com/sunmi-OS/gocore/v2 v2.1.19
 	golang.org/x/text v0.9.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
 	google.golang.org/grpc v1.55.0

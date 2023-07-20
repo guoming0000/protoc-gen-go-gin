@@ -12,6 +12,8 @@ service BlogService {
     rpc GetArticles(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { post: "/v1/articles" additional_bindings { post: "/v1/author/articles" } }; }
     // 新建文章
     rpc CreateArticle(Article) returns (Article) { option (google.api.http) = { post: "/v1/author/{author_id}/articles"}; }
+    // 获取文章详情
+    rpc GetOneArticle(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { get: "/v1/get/article"}; }
 }
 
 // 消息名使用首字母大写驼峰风格(CamelCase)，例如message StudentReq { ... }

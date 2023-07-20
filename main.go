@@ -285,7 +285,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("func Register", serverType, "(s *", ginPackage.Ident("Engine"), ", srv ", serverType, ") {")
 	g.P(`r := s.Group("/")`)
 	for _, m := range methods {
-		g.P(fmt.Sprintf(`r.POST("%v", %v(srv))`, m.Path, httpHandlerName(service.GoName, m.Name, m.Num)))
+		g.P(fmt.Sprintf(`r.%v("%v", %v(srv))`, m.Method, m.Path, httpHandlerName(service.GoName, m.Name, m.Num)))
 	}
 	g.P("}")
 	g.P()
@@ -357,6 +357,12 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	for _, m := range methods {
 		// func (c *XXXHttpClientImpl) XXX(ctx *Context, req *XXXRequest) (*XXXResponse, error)
 		g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*TResponse[", m.Reply, "], error) {")
+		if m.Method == "GET" {
+			g.P(`// TODO: GET method not support
+				return nil, ecode.NewV2(-1, "GET method not support")
+			}`)
+			continue
+		}
 		g.P("resp := &TResponse[", m.Reply, "]{}")
 		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
 		g.P(fmt.Sprintf(`if err != nil {
@@ -419,11 +425,14 @@ var methodSets = make(map[string]int)
 
 func buildHTTPRule(g *protogen.GeneratedFile, m *protogen.Method, rule *annotations.HttpRule) *method {
 	path, ok := rule.Pattern.(*annotations.HttpRule_Post)
-	if !ok {
-		panic("method not support")
+	if ok {
+		return buildMethodDesc(g, m, "POST", path.Post)
 	}
-	md := buildMethodDesc(g, m, "POST", path.Post)
-	return md
+	path2, ok := rule.Pattern.(*annotations.HttpRule_Get)
+	if ok {
+		return buildMethodDesc(g, m, "GET", path2.Get)
+	}
+	panic("method not support")
 }
 
 func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, httpMethod, path string) *method {
