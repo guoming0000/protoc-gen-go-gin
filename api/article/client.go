@@ -65,7 +65,7 @@ func newClient(isPrivate bool, strs ...string) *http_request.HttpClient {
 	}
 	h := http_request.New()
 	h.Client.SetTimeout(time.Second * 30).OnAfterResponse(MustCode200)
-	h.Client.SetHostURL(GetHostUrl(isPrivate, str))
+	h.Client.SetBaseURL(GetHostUrl(isPrivate, str))
 	appID := os.Getenv("APP_ID")
 	if appID == "" {
 		appID = "default-iotlink-go"

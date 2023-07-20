@@ -48,16 +48,14 @@ func main() {
 }
 
 const (
-	gocoreApi       = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
-	ecodePackage    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
-	utilsPacakge    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
-	httpRequest     = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
-	ginPackage      = protogen.GoImportPath("github.com/gin-gonic/gin")
-	sonicPackage    = protogen.GoImportPath("github.com/bytedance/sonic")
-	httpPackage     = protogen.GoImportPath("net/http")
-	ctxPackage      = protogen.GoImportPath("context")
-	strconvPackage  = protogen.GoImportPath("strconv")
-	metadataPackage = protogen.GoImportPath("google.golang.org/grpc/metadata")
+	gocoreApi    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	ecodePackage = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	utilsPacakge = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
+	httpRequest  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
+	ginPackage   = protogen.GoImportPath("github.com/gin-gonic/gin")
+	sonicPackage = protogen.GoImportPath("github.com/bytedance/sonic")
+	httpPackage  = protogen.GoImportPath("net/http")
+	ctxPackage   = protogen.GoImportPath("context")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -124,37 +122,13 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 
 	func SetCustomReturn(ctx *api.Context, flag bool) {
 		c := ctx.Request.Context()
-		md, ok := metadata.FromIncomingContext(c)
-		if ok {
-			md.Set(customReturnKey, []string{strconv.FormatBool(flag)}...)
-		} else {
-			md = metadata.Pairs(customReturnKey, strconv.FormatBool(flag))
-		}
-		c = metadata.NewIncomingContext(c, md)
+		c = utils.SetMetaData(c, customReturnKey, "true")
 		ctx.Request = ctx.Request.WithContext(c)
 	}`)
 	g.P()
 
-	g.P(`func GetCustomReturn(ctx *api.Context) bool {
-	c := ctx.Request.Context()`)
-	g.P("md, ok := ", metadataPackage.Ident("FromIncomingContext"), "(c)")
-	g.P("if ok {")
-	g.P(`vals := md.Get(customReturnKey)
-			if len(vals) == 0 {
-				return false
-	}`)
-	g.P("flag, err := ", strconvPackage.Ident("ParseBool"), "(vals[0])")
-	g.P(`if err != nil {
-				return false
-			}
-			return flag
-		}
-		return false
-	}`)
-	g.P()
-
 	g.P(`func setRetJSON(ctx *api.Context, resp interface{}, err error) {
-	if GetCustomReturn(ctx) {
+	if utils.GetMetaData(ctx.Request.Context(), customReturnKey) != "" {
 		return
 	}
 	ctx.RetJSON(resp, err)

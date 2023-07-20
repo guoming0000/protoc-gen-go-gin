@@ -9,8 +9,6 @@ package article
 import (
 	api "github.com/sunmi-OS/gocore/v2/api"
 	utils "github.com/sunmi-OS/gocore/v2/utils"
-	metadata "google.golang.org/grpc/metadata"
-	strconv "strconv"
 )
 
 type TResponse[T any] struct {
@@ -44,35 +42,12 @@ const customReturnKey = "x-md-local-customreturn"
 
 func SetCustomReturn(ctx *api.Context, flag bool) {
 	c := ctx.Request.Context()
-	md, ok := metadata.FromIncomingContext(c)
-	if ok {
-		md.Set(customReturnKey, []string{strconv.FormatBool(flag)}...)
-	} else {
-		md = metadata.Pairs(customReturnKey, strconv.FormatBool(flag))
-	}
-	c = metadata.NewIncomingContext(c, md)
+	c = utils.SetMetaData(c, customReturnKey, "true")
 	ctx.Request = ctx.Request.WithContext(c)
 }
 
-func GetCustomReturn(ctx *api.Context) bool {
-	c := ctx.Request.Context()
-	md, ok := metadata.FromIncomingContext(c)
-	if ok {
-		vals := md.Get(customReturnKey)
-		if len(vals) == 0 {
-			return false
-		}
-		flag, err := strconv.ParseBool(vals[0])
-		if err != nil {
-			return false
-		}
-		return flag
-	}
-	return false
-}
-
 func setRetJSON(ctx *api.Context, resp interface{}, err error) {
-	if GetCustomReturn(ctx) {
+	if utils.GetMetaData(ctx.Request.Context(), customReturnKey) != "" {
 		return
 	}
 	ctx.RetJSON(resp, err)
