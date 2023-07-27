@@ -77,112 +77,112 @@ func ErrRegisterDeviceBatchFaile(msg ...string) *ecode.ErrorV2 {
 
 func IsUnknowError(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == UNKNOW_ERROR
+		return se.Code() == UNKNOW_ERROR
 	}
 	return false
 }
 
 func IsUnknowErrorDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == UNKNOW_ERROR && se.Status.Reason == ErrMap[UNKNOW_ERROR]
+		return se.Code() == UNKNOW_ERROR && se.Message() == ErrMap[UNKNOW_ERROR]
 	}
 	return false
 }
 
 func IsErrProductNotFound(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_PRODUCT_NOT_FOUND
+		return se.Code() == ERR_PRODUCT_NOT_FOUND
 	}
 	return false
 }
 
 func IsErrProductNotFoundDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_PRODUCT_NOT_FOUND && se.Status.Reason == ErrMap[ERR_PRODUCT_NOT_FOUND]
+		return se.Code() == ERR_PRODUCT_NOT_FOUND && se.Message() == ErrMap[ERR_PRODUCT_NOT_FOUND]
 	}
 	return false
 }
 
 func IsErrProductModuleNotFound(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_PRODUCT_MODULE_NOT_FOUND
+		return se.Code() == ERR_PRODUCT_MODULE_NOT_FOUND
 	}
 	return false
 }
 
 func IsErrProductModuleNotFoundDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_PRODUCT_MODULE_NOT_FOUND && se.Status.Reason == ErrMap[ERR_PRODUCT_MODULE_NOT_FOUND]
+		return se.Code() == ERR_PRODUCT_MODULE_NOT_FOUND && se.Message() == ErrMap[ERR_PRODUCT_MODULE_NOT_FOUND]
 	}
 	return false
 }
 
 func IsErrSaasDeviceBindFail(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_SAAS_DEVICE_BIND_FAIL
+		return se.Code() == ERR_SAAS_DEVICE_BIND_FAIL
 	}
 	return false
 }
 
 func IsErrSaasDeviceBindFailDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_SAAS_DEVICE_BIND_FAIL && se.Status.Reason == ErrMap[ERR_SAAS_DEVICE_BIND_FAIL]
+		return se.Code() == ERR_SAAS_DEVICE_BIND_FAIL && se.Message() == ErrMap[ERR_SAAS_DEVICE_BIND_FAIL]
 	}
 	return false
 }
 
 func IsErrProductAppFoundFail(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_PRODUCT_APP_FOUND_FAIL
+		return se.Code() == ERR_PRODUCT_APP_FOUND_FAIL
 	}
 	return false
 }
 
 func IsErrProductAppFoundFailDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_PRODUCT_APP_FOUND_FAIL && se.Status.Reason == ErrMap[ERR_PRODUCT_APP_FOUND_FAIL]
+		return se.Code() == ERR_PRODUCT_APP_FOUND_FAIL && se.Message() == ErrMap[ERR_PRODUCT_APP_FOUND_FAIL]
 	}
 	return false
 }
 
 func IsErrRegisterDeviceLimit(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_REGISTER_DEVICE_LIMIT
+		return se.Code() == ERR_REGISTER_DEVICE_LIMIT
 	}
 	return false
 }
 
 func IsErrRegisterDeviceLimitDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_REGISTER_DEVICE_LIMIT && se.Status.Reason == ErrMap[ERR_REGISTER_DEVICE_LIMIT]
+		return se.Code() == ERR_REGISTER_DEVICE_LIMIT && se.Message() == ErrMap[ERR_REGISTER_DEVICE_LIMIT]
 	}
 	return false
 }
 
 func IsErrRegisterDeviceSingleFaile(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_REGISTER_DEVICE_SINGLE_FAILE
+		return se.Code() == ERR_REGISTER_DEVICE_SINGLE_FAILE
 	}
 	return false
 }
 
 func IsErrRegisterDeviceSingleFaileDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_REGISTER_DEVICE_SINGLE_FAILE && se.Status.Reason == ErrMap[ERR_REGISTER_DEVICE_SINGLE_FAILE]
+		return se.Code() == ERR_REGISTER_DEVICE_SINGLE_FAILE && se.Message() == ErrMap[ERR_REGISTER_DEVICE_SINGLE_FAILE]
 	}
 	return false
 }
 
 func IsErrRegisterDeviceBatchFaile(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_REGISTER_DEVICE_BATCH_FAILE
+		return se.Code() == ERR_REGISTER_DEVICE_BATCH_FAILE
 	}
 	return false
 }
 
 func IsErrRegisterDeviceBatchFaileDEEP(err error) bool {
 	if se := new(ecode.ErrorV2); errors.As(err, &se) {
-		return se.Status.Code == ERR_REGISTER_DEVICE_BATCH_FAILE && se.Status.Reason == ErrMap[ERR_REGISTER_DEVICE_BATCH_FAILE]
+		return se.Code() == ERR_REGISTER_DEVICE_BATCH_FAILE && se.Message() == ErrMap[ERR_REGISTER_DEVICE_BATCH_FAILE]
 	}
 	return false
 }

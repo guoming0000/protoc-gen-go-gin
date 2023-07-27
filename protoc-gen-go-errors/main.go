@@ -141,7 +141,7 @@ func generateErrorsContent(file *protogen.File, g *protogen.GeneratedFile) {
 		for _, v := range enum.Values {
 			g.P("func Is", case2Camel(string(v.Desc.Name())), "(err error) bool {")
 			g.P("if se := new(", ecodePackage.Ident("ErrorV2"), "); ", errorsPackage.Ident("As"), "(err, &se) {")
-			g.P("return se.Status.Code == ", v.Desc.Name())
+			g.P("return se.Code() == ", v.Desc.Name())
 			g.P("}")
 			g.P("return false")
 			g.P("}")
@@ -149,7 +149,7 @@ func generateErrorsContent(file *protogen.File, g *protogen.GeneratedFile) {
 
 			g.P("func Is", case2Camel(string(v.Desc.Name())), "DEEP(err error) bool {")
 			g.P("if se := new(", ecodePackage.Ident("ErrorV2"), "); errors.As(err, &se) {")
-			g.P("return se.Status.Code == ", v.Desc.Name(), " && se.Status.Reason == ErrMap[", v.Desc.Name(), "]")
+			g.P("return se.Code() == ", v.Desc.Name(), " && se.Message() == ErrMap[", v.Desc.Name(), "]")
 			g.P("}")
 			g.P("return false")
 			g.P("}")
