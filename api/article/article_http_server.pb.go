@@ -23,13 +23,13 @@ type BlogServiceHTTPServer interface {
 
 func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
 	r := s.Group("/")
-	r.POST("/v1/author/articles", _BlogService_GetArticles0_HTTP_Handler(srv))
-	r.POST("/v1/articles", _BlogService_GetArticles1_HTTP_Handler(srv))
-	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle0_HTTP_Handler(srv))
-	r.GET("/v1/get/article", _BlogService_GetOneArticle0_HTTP_Handler(srv))
+	r.POST("/v1/author/articles", _BlogService_GetArticles_HTTP_Handler(srv))
+	r.POST("/v1/articles", _BlogService_GetArticles_HTTP_Handler(srv))
+	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle_HTTP_Handler(srv))
+	r.GET("/v1/get/article", _BlogService_GetOneArticle_HTTP_Handler(srv))
 }
 
-func _BlogService_GetArticles0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
+func _BlogService_GetArticles_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)
@@ -44,22 +44,7 @@ func _BlogService_GetArticles0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *g
 	}
 }
 
-func _BlogService_GetArticles1_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
-	return func(g *gin.Context) {
-		req := &GetArticlesReq{}
-		ctx := api.NewContext(g)
-		err := ctx.ShouldBindJSON(req)
-		err = checkValidate(err)
-		if err != nil {
-			setRetJSON(&ctx, nil, err)
-			return
-		}
-		resp, err := srv.GetArticles(&ctx, req)
-		setRetJSON(&ctx, resp, err)
-	}
-}
-
-func _BlogService_CreateArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
+func _BlogService_CreateArticle_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &Article{}
 		ctx := api.NewContext(g)
@@ -74,7 +59,7 @@ func _BlogService_CreateArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g 
 	}
 }
 
-func _BlogService_GetOneArticle0_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
+func _BlogService_GetOneArticle_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &GetArticlesReq{}
 		ctx := api.NewContext(g)

@@ -23,14 +23,14 @@ type GetArticlesReq struct {
 }
 
 type GetArticlesReply struct {
-	Total    int64      `json:"total,omitempty"`
+	Total    int64      `json:"total,omitempty" binding:"required"`
 	Articles []*Article `json:"articles,omitempty"`
 }
 
 type Article struct {
 	// 标题名称上注释
 	Title    string `json:"title,omitempty"` // 标题名称右注释
-	Content  string `json:"content,omitempty"`
+	Content  string `json:"content,omitempty" binding:"required"`
 	AuthorId int32  `json:"author_id,omitempty"`
 }
 

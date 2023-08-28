@@ -4,18 +4,23 @@
 package article
 
 import (
+	_ "github.com/golang/protobuf/ptypes/any"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 )
 
 type PushReq struct {
+	Name string `json:"name,omitempty" binding:"required"` //  姓名
 }
 
+// 得到的回复
+// 得到的回复1
+// 得到的回复2
 type PushReply struct {
+	SdkUrlUuid string `json:"sdk_url_uuid,omitempty"`
 }
 
-type UploadOssdk3RdReq struct {
-	Operator   string `json:"operator,omitempty"`
-	SdkUrlUuid string `json:"sdk_url_uuid,omitempty"`
-	SdkOs      string `json:"sdk_os,omitempty"`
-	FileName   string `json:"file_name,omitempty"`
+type RealResp struct {
+	Data    interface{} `json:"data,omitempty"`
+	Code    int32       `json:"code,omitempty"`
+	Message string      `json:"message,omitempty"`
 }

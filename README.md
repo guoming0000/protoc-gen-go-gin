@@ -13,7 +13,7 @@ wget 'http://qiniu.brightguo.com/sunmi/protoc-gen-go_mac13.0' -O protoc-gen-go &
 go install github.com/guoming0000/protoc-gen-go-gin@latest
 
 # protoc-gen-go-errors (生成{package}_ecode.pb.go)
-go install github.com/guoming0000/protoc-gen-go-gin/protoc-gen-go-errors@latest
+go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-go-errors@latest
   
 # 拷贝third_party目录(protoc-gen-go-gin和protoc-gen-validate会用到)
 git clone https://github.com/guoming0000/protoc-gen-go-gin.git
