@@ -6,10 +6,16 @@ require (
 	github.com/bytedance/sonic v1.9.2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/sunmi-OS/gocore/v2 v2.1.20
+	github.com/golang/glog v1.1.0
+	github.com/google/go-cmp v0.5.9
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
+	github.com/sunmi-OS/gocore/v2 v2.1.22
 	golang.org/x/text v0.9.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230629202037-9506855d4529
+	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -70,10 +76,7 @@ require (
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230629202037-9506855d4529 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230629202037-9506855d4529 // indirect
-	google.golang.org/grpc v1.55.0 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

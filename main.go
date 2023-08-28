@@ -292,6 +292,10 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 
 	// http method func
 	for _, m := range methods {
+		if m.Num != 0 {
+			// 只生成一个即可
+			continue
+		}
 		g.P("func ", httpHandlerName(service.GoName, m.Name, m.Num), "(srv ", serverType, ") func(g *gin.Context) {")
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
@@ -333,7 +337,7 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	for _, m := range service.Methods {
 		rule, ok := proto.GetExtension(m.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
 		if rule != nil && ok {
-			// 跳过additional的client生成，一般只需要请求一个接口
+			// 跳过additional的client生成，只需要请求一个接口
 			//for _, bind := range rule.AdditionalBindings {
 			//	methods = append(methods, buildHTTPRule(m, bind))
 			//}
@@ -379,7 +383,8 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 
 // _{ServiceName}_{MethodName}_HTTPServer_Handler is the handler invoked by the HTTP transport layer for service
 func httpHandlerName(serivceName, methodName string, num int) string {
-	return fmt.Sprintf("_%s_%s%d_HTTP_Handler", serivceName, methodName, num)
+	//return fmt.Sprintf("_%s_%s%d_HTTP_Handler", serivceName, methodName, num)
+	return fmt.Sprintf("_%s_%s_HTTP_Handler", serivceName, methodName)
 }
 
 type method struct {
@@ -394,10 +399,11 @@ type method struct {
 	ResponseBody string
 }
 
-// HandlerName for gin handler name
-func (m *method) HandlerName() string {
-	return fmt.Sprintf("%s_%d", m.Name, m.Num)
-}
+//
+//// HandlerName for gin handler name
+//func (m *method) HandlerName() string {
+//	return fmt.Sprintf("%s_%d", m.Name, m.Num)
+//}
 
 // HasPathParams 是否包含路由参数
 func (m *method) HasPathParams() bool {

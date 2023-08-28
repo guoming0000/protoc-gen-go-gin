@@ -60,3 +60,4 @@ type GetArticlesReq struct {
 - [x] 支持proto-gen-error-go
 - [x] 支持自定义错误码
 - [x] 支持gin形式的binding参数校验方法
+- [] 支持枚举

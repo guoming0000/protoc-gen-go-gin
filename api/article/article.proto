@@ -36,14 +36,14 @@ message GetArticlesReq {
 }
 
 message GetArticlesReply {
-    int64 total = 1;
+    int64 total = 1;  // binding:"required"
     repeated Article articles = 2;
 }
 
 message Article {
     // 标题名称上注释
     string title  = 1; // 标题名称右注释
-    string content = 2;
+    string content = 2;  // binding:"required"
     int32 author_id = 3;
 }
 
