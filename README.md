@@ -10,10 +10,13 @@ brew install protobuf
 wget 'http://qiniu.brightguo.com/sunmi/protoc-gen-go_mac13.0' -O protoc-gen-go && chmod +x protoc-gen-go && mv protoc-gen-go $(go env GOPATH)/bin
 
 # protoc-gen-go-gin（生成{package}_http_client.pb.go {package}_http_server.pb.go {package}_json.pb.go）
-go install github.com/guoming0000/protoc-gen-go-gin@latest
+go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-go-gin@latest
 
 # protoc-gen-go-errors (生成{package}_ecode.pb.go)
 go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-go-errors@latest
+
+# protoc-gen-go-openapiv2 生成{package}.swagger.json）
+go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-go-openapi@latest
   
 # 拷贝third_party目录(protoc-gen-go-gin和protoc-gen-validate会用到)
 git clone https://github.com/guoming0000/protoc-gen-go-gin.git
@@ -26,7 +29,6 @@ protoc -I. -I ./third_party --go-gin_out=./ --go_out=./  api/article.proto
 
 protoc --go-errors_out=./ api/article_error.proto
 
-protoc -I. -I ./third_party --openapiv2_out . --openapiv2_opt logtostderr=true --openapiv2_opt json_names_for_fields=false api/article.proto
 ```
 
 proto demo
@@ -61,3 +63,4 @@ type GetArticlesReq struct {
 - [x] 支持自定义错误码
 - [x] 支持gin形式的binding参数校验方法
 - [] 支持枚举
+- [x] 支持生成swagger 2023.9.7(待优化)

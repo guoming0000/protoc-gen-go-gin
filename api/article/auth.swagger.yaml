@@ -1,19 +1,17 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+# https://github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
-    title: AuthService API
+    title: 商米助手 API
     version: 0.0.1
 paths:
     /private/push:
         post:
             tags:
-                - AuthService
-            description: |-
-                Push发送
-                 发送1
-                 发送2
+                - 商米助手
+            summary: 'Push发送1 '
+            description: ' 发送1<br> 发送2<br> 发送3<br> 发送4<br> 发送5'
             operationId: AuthService_Push
             requestBody:
                 content:
@@ -33,18 +31,27 @@ components:
         .PushReply:
             type: object
             properties:
-                sdkUrlUuid:
+                sdk_url_uuid:
                     type: string
             description: |-
                 上面的备注1
                  上面的备注2
                  上面的备注3
         .PushReq:
+            required:
+                - name
+                - page_count
             type: object
             properties:
                 name:
                     type: string
-                    description: string name = 1; // binding:"required" 姓名2 PushReq的body
+                    description: name上面的备注
+                page_count:
+                    type: integer
+                    format: int64
+                data_count:
+                    type: integer
+                    format: int32
             description: 这个是PushReq的标题2
         .TPushReply:
             type: object
@@ -71,4 +78,4 @@ components:
                   string file_name = 4;
                 }
 tags:
-    - name: AuthService
+    - name: 商米助手

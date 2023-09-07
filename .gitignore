@@ -1,6 +1,7 @@
 cmd/protoc-gen-go-errors/protoc-gen-go-errors
-cmd/protoc-gen-openapiv2/protoc-gen-openapiv2
-protoc-gen-go-gin
+cmd/protoc-gen-openapi/protoc-gen-openapi
+cmd/protoc-gen-go-gin/protoc-gen-go-gin
+
 
 # Binaries for programs and plugins
 *.exe
