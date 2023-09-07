@@ -16,7 +16,7 @@ go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-go-gin@latest
 go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-go-errors@latest
 
 # protoc-gen-go-openapiv2 生成{package}.swagger.json）
-go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-go-openapi@latest
+go install github.com/guoming0000/protoc-gen-go-gin/cmd/protoc-gen-openapi@latest
   
 # 拷贝third_party目录(protoc-gen-go-gin和protoc-gen-validate会用到)
 git clone https://github.com/guoming0000/protoc-gen-go-gin.git
