@@ -444,6 +444,7 @@ func (g *OpenAPIv3Generator) buildOperationV3(
 	bodyField string,
 	inputMessage *protogen.Message,
 	outputMessage *protogen.Message,
+	moreRulesComment string,
 ) (*v3.Operation, string, map[string]bool) {
 	// coveredParameters tracks the parameters that have been used in the body or path.
 	coveredParameters := make([]string, 0)
@@ -605,6 +606,7 @@ func (g *OpenAPIv3Generator) buildOperationV3(
 	if newTagName != tagName {
 		tagnames[newTagName] = true
 	}
+	description += moreRulesComment
 	op := &v3.Operation{
 		Tags:        []string{newTagName},
 		Description: description,
@@ -728,6 +730,28 @@ func (g *OpenAPIv3Generator) addPathsToDocumentV3(d *v3.Document, services []*pr
 				rules = append(rules, rule.AdditionalBindings...)
 			}
 
+			// 只对第一个rule生成文档，后面的不生成放到文档里！
+			moreRulesComment := ""
+			if len(rules) > 1 {
+				for _, rule := range rules[1:] {
+					var path string
+					var methodName string
+					switch pattern := rule.Pattern.(type) {
+					case *annotations.HttpRule_Get:
+						path = pattern.Get
+						methodName = "GET"
+					case *annotations.HttpRule_Post:
+						path = pattern.Post
+						methodName = "POST"
+					default:
+						printErr("unsupported rule pattern %v", pattern)
+					}
+					if moreRulesComment == "" {
+						moreRulesComment += "<br>"
+					}
+					moreRulesComment += fmt.Sprintf("其它绑定路径(additional_bindings):   %s %s<br>", methodName, path)
+				}
+			}
 			for _, rule := range rules {
 				var path string
 				var methodName string
@@ -760,7 +784,7 @@ func (g *OpenAPIv3Generator) addPathsToDocumentV3(d *v3.Document, services []*pr
 					defaultHost := proto.GetExtension(service.Desc.Options(), annotations.E_DefaultHost).(string)
 
 					op, path2, tmpTagNames := g.buildOperationV3(
-						d, operationID, service.GoName, comment, defaultHost, path, body, inputMessage, outputMessage)
+						d, operationID, service.GoName, comment, defaultHost, path, body, inputMessage, outputMessage, moreRulesComment)
 					for tag, _ := range tmpTagNames {
 						tagNames[tag] = true
 					}
@@ -773,6 +797,8 @@ func (g *OpenAPIv3Generator) addPathsToDocumentV3(d *v3.Document, services []*pr
 
 					g.addOperationToDocumentV3(d, op, path2, methodName)
 				}
+				// 只生成第一个
+				break
 			}
 		}
 
@@ -785,7 +811,7 @@ func (g *OpenAPIv3Generator) addPathsToDocumentV3(d *v3.Document, services []*pr
 					d.Tags = append(d.Tags, &v3.Tag{Name: tag, Description: comment})
 				}
 			}
-			printErr("tags = %v", d.Tags)
+			// printErr("tags = %v", d.Tags)
 		}
 	}
 }

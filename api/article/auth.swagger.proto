@@ -14,7 +14,12 @@ service AuthService {
   // 发送5
   rpc Push(PushReq) returns (TPushReply)  {
     // 方法头注释1 无效
-    option (google.api.http) = { post: "/private/push" body: "*"}; // 方法屁股注释1 无效
+    option (google.api.http) = {
+      post: "/private/push"
+      additional_bindings { post: "/private/v1/push" }
+      additional_bindings { post: "/private/v1/push2" }
+      body: "*"
+    }; // 方法屁股注释1 无效
   }
   //rpc Pull(PushReq) returns (UploadOssdk3rdReq)  { option (google.api.http) = { post: "/private/pull"}; }
 }

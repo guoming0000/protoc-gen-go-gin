@@ -17,6 +17,7 @@ service AuthService {
     option (google.api.http) = {
       post: "/private/push"
       additional_bindings { post: "/private/v1/push" }
+      additional_bindings { post: "/private/v1/push2" }
       body: "*"
     }; // 方法屁股注释1 无效
   }

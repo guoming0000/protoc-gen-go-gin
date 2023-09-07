@@ -11,7 +11,7 @@
           "商米助手"
         ],
         "summary": "Push发送1 ",
-        "description": " 发送1<br> 发送2<br> 发送3<br> 发送4<br> 发送5",
+        "description": " 发送1<br> 发送2<br> 发送3<br> 发送4<br> 发送5<br>其它绑定路径(additional_bindings):   POST /private/v1/push<br>其它绑定路径(additional_bindings):   POST /private/v1/push2<br>",
         "operationId": "AuthService_Push",
         "requestBody": {
           "content": {

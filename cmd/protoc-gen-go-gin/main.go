@@ -337,11 +337,16 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	for _, m := range service.Methods {
 		rule, ok := proto.GetExtension(m.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
 		if rule != nil && ok {
-			// 跳过additional的client生成，只需要请求一个接口
-			//for _, bind := range rule.AdditionalBindings {
-			//	methods = append(methods, buildHTTPRule(m, bind))
-			//}
-			methods = append(methods, buildHTTPRule(g, m, rule))
+			me := buildHTTPRule(g, m, rule)
+			// additional中如果有private则使用该接口生成
+			for _, bind := range rule.AdditionalBindings {
+				tmp := buildHTTPRule(g, m, bind)
+				if strings.HasPrefix(tmp.Path, "/private") {
+					me = tmp
+					break
+				}
+			}
+			methods = append(methods, me)
 		}
 	}
 
