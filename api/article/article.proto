@@ -8,7 +8,8 @@ import "google/api/annotations.proto";
 // RPC 服务名和方法名，均使用首字母大写驼峰风格，例如service FooService{ rpc GetSomething() }
 // blog service is a blog demo
 service BlogService {
-    // 获取文章列表 | 可以读取不多于999个文章列表
+    // 获取文章列表
+    // 可以读取不多于999个文章列表
     rpc GetArticles(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { post: "/v1/articles" additional_bindings { post: "/v1/author/articles" } }; }
     // 新建文章
     rpc CreateArticle(Article) returns (Article) { option (google.api.http) = { post: "/v1/author/{author_id}/articles"}; }

@@ -747,9 +747,9 @@ func (g *OpenAPIv3Generator) addPathsToDocumentV3(d *v3.Document, services []*pr
 						printErr("unsupported rule pattern %v", pattern)
 					}
 					if moreRulesComment == "" {
-						moreRulesComment += "<br>"
+						moreRulesComment += `<br><br><b><font color="green">其它router路径(additional_bindings):</b></font> `
 					}
-					moreRulesComment += fmt.Sprintf("其它绑定路径(additional_bindings):   %s %s<br>", methodName, path)
+					moreRulesComment += fmt.Sprintf("<br><b>%s %s</b>", methodName, path)
 				}
 			}
 			for _, rule := range rules {
@@ -990,7 +990,8 @@ func splitDescription(str, tagname string) (summary string, desc string, tag str
 		return
 	}
 	strs := strings.Split(str, "\n")
-	desc = strings.Join(strs[1:], "<br>")
+	//desc = strings.Join(strs[1:], "<br>")
+	desc = strings.Join(strs[1:], "\n")
 	summary = strs[0]
 	fstrs := strings.Split(summary, "||")
 	l := len(fstrs)

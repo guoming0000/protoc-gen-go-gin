@@ -11,13 +11,29 @@ paths:
             tags:
                 - 商米助手
             summary: 'Push发送1 '
-            description: ' 发送1<br> 发送2<br> 发送3<br> 发送4<br> 发送5<br>其它绑定路径(additional_bindings):   POST /private/v1/push<br>其它绑定路径(additional_bindings):   POST /private/v1/push2<br>'
+            description: |4-
+                 发送1<br>
+                 发送2<br>
+                 > 发送3
+                 发送4
+                 `import from json`
+                 这是一个链接 [Markdown语法](https://markdown.com.cn "最好的markdown教程")。
+
+                 | 错误码 | 错误消息 | 错误描述 |
+                | --- | ---- | ---- |
+                | 10207  | ath not match                     | 服务端token不一致      |
+                | 10224  | device not found                  | 设备不存在             |
+                | 10114  | task not found                    | 自动下载密钥任务不存在 |
+                | 10208  | binding key not found             | 绑定密钥不存在         |
+                | 10212  | no available license              | 没有可用license        |
+                | 10213  | license download times not enough | license 下载次数不足   |
+                | 500    |                                   | 程序异常               |<br><br><b><font color="green">其它router路径(additional_bindings):</b></font> <br><b>POST /private/v1/push</b><br><b>POST /private/v1/push2</b>
             operationId: AuthService_Push
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/.PushReq'
+                            $ref: '#/components/schemas/PushReq'
                 required: true
             responses:
                 "200":
@@ -25,10 +41,10 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/.TPushReply'
+                                $ref: '#/components/schemas/TPushReply'
 components:
     schemas:
-        .PushReply:
+        PushReply:
             type: object
             properties:
                 sdk_url_uuid:
@@ -37,7 +53,7 @@ components:
                 上面的备注1
                  上面的备注2
                  上面的备注3
-        .PushReq:
+        PushReq:
             required:
                 - name
                 - page_count
@@ -53,7 +69,11 @@ components:
                     type: integer
                     format: int32
             description: 这个是PushReq的标题2
-        .TPushReply:
+        TPushReply:
+            required:
+                - code
+                - message
+                - data
             type: object
             properties:
                 code:
@@ -62,20 +82,6 @@ components:
                 message:
                     type: string
                 data:
-                    $ref: '#/components/schemas/.PushReply'
-            description: |-
-                message RealResp {
-                  google.protobuf.Any data = 1;
-                  int32 code = 2;
-                  string message = 3;
-                }
-
-
-                message UploadOssdk3rdReq {
-                  string operator = 1;
-                  string sdk_url_uuid = 2;
-                  string sdk_os = 3;
-                  string file_name = 4;
-                }
+                    $ref: '#/components/schemas/PushReply'
 tags:
     - name: 商米助手

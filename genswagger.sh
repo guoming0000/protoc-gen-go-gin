@@ -17,10 +17,9 @@ cd ../../
 
 go run swagger.go api/article/auth.proto
 
-
 protoc --proto_path=. \
         --proto_path=./third_party \
-        --openapi_out=fq_schema_naming=true,default_response=false,output_mode=source_relative:. \
+        --openapi_out=. \
         api/article/auth.swagger.proto
 
 yq -Poj api/article/auth.swagger.yaml > api/article/auth.swagger.json

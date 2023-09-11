@@ -2,6 +2,7 @@ cmd/protoc-gen-go-errors/protoc-gen-go-errors
 cmd/protoc-gen-openapi/protoc-gen-openapi
 cmd/protoc-gen-go-gin/protoc-gen-go-gin
 
+.DS_Store
 
 # Binaries for programs and plugins
 *.exe

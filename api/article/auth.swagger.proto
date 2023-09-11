@@ -6,12 +6,26 @@ import "google/api/annotations.proto";
 import "google/protobuf/any.proto";
 
 service AuthService {
+  // option (google.api.default_host) = "vpc-eco-iotlink-auth.sunmi.com";
+
   // Push发送1 ||商米助手
-  // 发送1
-  // 发送2
-  // 发送3
+  // 发送1<br>
+  // 发送2<br>
+  // > 发送3
   // 发送4
-  // 发送5
+  // `import from json`
+  // 这是一个链接 [Markdown语法](https://markdown.com.cn "最好的markdown教程")。
+  //
+  // | 错误码 | 错误消息 | 错误描述 |
+  //| --- | ---- | ---- |
+  //| 10207  | ath not match                     | 服务端token不一致      |
+  //| 10224  | device not found                  | 设备不存在             |
+  //| 10114  | task not found                    | 自动下载密钥任务不存在 |
+  //| 10208  | binding key not found             | 绑定密钥不存在         |
+  //| 10212  | no available license              | 没有可用license        |
+  //| 10213  | license download times not enough | license 下载次数不足   |
+  //| 500    |                                   | 程序异常               |
+  //
   rpc Push(PushReq) returns (TPushReply)  {
     // 方法头注释1 无效
     option (google.api.http) = {
@@ -54,8 +68,11 @@ message PushReply {
 //  string sdk_os = 3;
 //  string file_name = 4;
 //}
+
+
+
 message TPushReply {
-   int32 code = 1;
-   string message = 2;
-   PushReply data = 3;
+   int32 code = 1; // binding:"required"
+   string message = 2; // binding:"required"
+   PushReply data = 3; // binding:"required"
 }

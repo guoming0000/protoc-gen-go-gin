@@ -50,9 +50,9 @@ func main() {
 
 	for _, m := range rawMethods {
 		buf.WriteString("message T" + m + " {\n")
-		buf.WriteString("   int32 code = 1;\n")
-		buf.WriteString("   string message = 2;\n")
-		buf.WriteString("   " + m + " data = 3;\n")
+		buf.WriteString("   int32 code = 1; // binding:\"required\"\n")
+		buf.WriteString("   string message = 2; // binding:\"required\"\n")
+		buf.WriteString("   " + m + " data = 3; // binding:\"required\"\n")
 		buf.WriteString("}\n")
 	}
 	if os.WriteFile(newFilePath, buf.Bytes(), 0666) == nil {
