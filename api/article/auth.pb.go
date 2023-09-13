@@ -8,19 +8,17 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 )
 
+// 这个是PushReq的标题2
 type PushReq struct {
-	Name string `json:"name,omitempty" binding:"required"` //  姓名
+	// name上面的备注
+	Name      string `json:"name" binding:"required"`
+	PageCount int64  `json:"page_count" binding:"required"`
+	DataCount int32  `json:"data_count,omitempty"`
 }
 
-// 得到的回复
-// 得到的回复1
-// 得到的回复2
+// 上面的备注1
+// 上面的备注2
+// 上面的备注3
 type PushReply struct {
-	SdkUrlUuid string `json:"sdk_url_uuid,omitempty"`
-}
-
-type RealResp struct {
-	Data    interface{} `json:"data,omitempty"`
-	Code    int32       `json:"code,omitempty"`
-	Message string      `json:"message,omitempty"`
+	SdkUrlUuid string `json:"sdk_url_uuid,omitempty"` // 后面的备注
 }

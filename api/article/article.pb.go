@@ -10,7 +10,7 @@ import (
 // 消息名使用首字母大写驼峰风格(CamelCase)，例如message StudentReq { ... }
 type GetArticlesReq struct {
 	// 文章标题
-	Title string `json:"title,omitempty" binding:"required"` // 标题名称右注释
+	Title string `json:"title" binding:"required"` // 标题名称右注释
 	Page  int32  `json:"page,omitempty" binding:"lt=999"`
 	// 字段名使用小写下划线的风格，例如 string status_code = 1
 	PageSize int32 `json:"page_size,omitempty" binding:"lte=101"`
@@ -18,19 +18,19 @@ type GetArticlesReq struct {
 	AuthorId int32                    `json:"author_id,omitempty"`
 	Email    string                   `json:"email,omitempty" binding:"email"`
 	Name     string                   `json:"name,omitempty"`
-	Home     *GetArticlesReq_Location `json:"home,omitempty" binding:"required"`
-	TestStr  string                   `json:"test_str,omitempty" binding:"required"`
+	Home     *GetArticlesReq_Location `json:"home" binding:"required"`
+	TestStr  string                   `json:"test_str" binding:"required"`
 }
 
 type GetArticlesReply struct {
-	Total    int64      `json:"total,omitempty" binding:"required"`
+	Total    int64      `json:"total" binding:"required"`
 	Articles []*Article `json:"articles,omitempty"`
 }
 
 type Article struct {
 	// 标题名称上注释
 	Title    string `json:"title,omitempty"` // 标题名称右注释
-	Content  string `json:"content,omitempty" binding:"required"`
+	Content  string `json:"content" binding:"required"`
 	AuthorId int32  `json:"author_id,omitempty"`
 }
 
