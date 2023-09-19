@@ -72,14 +72,14 @@ components:
         TPushReply:
             required:
                 - code
-                - message
+                - msg
                 - data
             type: object
             properties:
                 code:
                     type: integer
                     format: int32
-                message:
+                msg:
                     type: string
                 data:
                     $ref: '#/components/schemas/PushReply'

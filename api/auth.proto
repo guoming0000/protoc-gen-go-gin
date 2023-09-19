@@ -35,7 +35,7 @@ service AuthService {
       body: "*"
     }; // 方法屁股注释1 无效
   }
-  //rpc Pull(PushReq) returns (UploadOssdk3rdReq)  { option (google.api.http) = { post: "/private/pull"}; }
+  rpc Pull(PushReq) returns (RealResp)  { option (google.api.http) = { post: "/private/pull"}; }
 }
 
 // 这个是PushReq的标题2
@@ -54,13 +54,13 @@ message PushReply {
   string sdk_url_uuid = 2; // 后面的备注
 }
 
-//
-//message RealResp {
-//  google.protobuf.Any data = 1;
-//  int32 code = 2;
-//  string message = 3;
-//}
-//
+
+message RealResp {
+  google.protobuf.Any data = 1;
+  int32 code = 2;
+  string message = 3;
+}
+
 //
 //message UploadOssdk3rdReq {
 //  string operator = 1;

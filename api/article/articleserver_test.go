@@ -20,6 +20,11 @@ type blogServiceHttpServer struct {
 	// 各种db的定义
 }
 
+func (b *blogServiceHttpServer) GetOneArticle(context *api.Context, req *GetArticlesReq) (*GetArticlesReply, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (b *blogServiceHttpServer) GetArticles(context *api.Context, req *GetArticlesReq) (*GetArticlesReply, error) {
 	return &GetArticlesReply{
 		Total: 775755,

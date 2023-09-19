@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.1
 // - protoc            v4.24.2
-// source: api/article/article_ecode.proto
+// source: api/article_ecode.proto
 
 package article
 

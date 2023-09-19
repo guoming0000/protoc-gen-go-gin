@@ -73,6 +73,6 @@ message PushReply {
 
 message TPushReply {
    int32 code = 1; // binding:"required"
-   string message = 2; // binding:"required"
+   string msg = 2; // binding:"required"
    PushReply data = 3; // binding:"required"
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.2
 // - protoc            v4.24.2
-// source: api/article/auth.proto
+// source: api/auth.proto
 
 package article
 

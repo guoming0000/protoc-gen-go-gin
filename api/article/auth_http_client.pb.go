@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.2
 // - protoc            v4.24.2
-// source: api/article/auth.proto
+// source: api/auth.proto
 
 package article
 
@@ -32,6 +32,7 @@ type AuthServiceHTTPClient interface {
 	// | 10213  | license download times not enough | license 下载次数不足   |
 	// | 500    |                                   | 程序异常               |
 	Push(context.Context, *PushReq) (*TResponse[PushReply], error)
+	Pull(context.Context, *PushReq) (*TResponse[RealResp], error)
 }
 
 type AuthServiceHTTPClientImpl struct {
@@ -45,6 +46,18 @@ func NewAuthServiceHTTPClient(hh *http_request.HttpClient) AuthServiceHTTPClient
 func (c *AuthServiceHTTPClientImpl) Push(ctx context.Context, req *PushReq) (*TResponse[PushReply], error) {
 	resp := &TResponse[PushReply]{}
 	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/private/v1/push")
+	if err != nil {
+		return nil, err
+	}
+	if resp.Code != 1 {
+		err = ecode.NewV2(resp.Code, resp.Msg)
+	}
+	return resp, err
+}
+
+func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq) (*TResponse[RealResp], error) {
+	resp := &TResponse[RealResp]{}
+	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/private/pull")
 	if err != nil {
 		return nil, err
 	}

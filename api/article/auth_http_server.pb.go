@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.2
 // - protoc            v4.24.2
-// source: api/article/auth.proto
+// source: api/auth.proto
 
 package article
 
@@ -31,13 +31,15 @@ type AuthServiceHTTPServer interface {
 	// | 10213  | license download times not enough | license 下载次数不足   |
 	// | 500    |                                   | 程序异常               |
 	Push(*api.Context, *PushReq) (*PushReply, error)
+	Pull(*api.Context, *PushReq) (*RealResp, error)
 }
 
 func RegisterAuthServiceHTTPServer(s *gin.Engine, srv AuthServiceHTTPServer) {
 	r := s.Group("/")
-	r.POST("/private/v1/push", _AuthService_Push_HTTP_Handler(srv))
-	r.POST("/private/v1/push2", _AuthService_Push_HTTP_Handler(srv))
-	r.POST("/private/push", _AuthService_Push_HTTP_Handler(srv))
+	r.POST("/private/v1/push", _AuthService_Push_HTTP_Handler(srv))  // Push发送1 ||商米助手
+	r.POST("/private/v1/push2", _AuthService_Push_HTTP_Handler(srv)) // Push发送1 ||商米助手
+	r.POST("/private/push", _AuthService_Push_HTTP_Handler(srv))     // Push发送1 ||商米助手
+	r.POST("/private/pull", _AuthService_Pull_HTTP_Handler(srv))
 }
 
 func _AuthService_Push_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
@@ -51,6 +53,21 @@ func _AuthService_Push_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Conte
 			return
 		}
 		resp, err := srv.Push(&ctx, req)
+		setRetJSON(&ctx, resp, err)
+	}
+}
+
+func _AuthService_Pull_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
+	return func(g *gin.Context) {
+		req := &PushReq{}
+		ctx := api.NewContext(g)
+		err := ctx.ShouldBindJSON(req)
+		err = checkValidate(err)
+		if err != nil {
+			setRetJSON(&ctx, nil, err)
+			return
+		}
+		resp, err := srv.Pull(&ctx, req)
 		setRetJSON(&ctx, resp, err)
 	}
 }

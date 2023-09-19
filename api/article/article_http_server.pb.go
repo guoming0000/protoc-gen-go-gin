@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.2
 // - protoc            v4.24.2
-// source: api/article/article.proto
+// source: api/article.proto
 
 package article
 
@@ -24,10 +24,10 @@ type BlogServiceHTTPServer interface {
 
 func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
 	r := s.Group("/")
-	r.POST("/v1/author/articles", _BlogService_GetArticles_HTTP_Handler(srv))
-	r.POST("/v1/articles", _BlogService_GetArticles_HTTP_Handler(srv))
-	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle_HTTP_Handler(srv))
-	r.GET("/v1/get/article", _BlogService_GetOneArticle_HTTP_Handler(srv))
+	r.POST("/v1/author/articles", _BlogService_GetArticles_HTTP_Handler(srv))              // 获取文章列表
+	r.POST("/v1/articles", _BlogService_GetArticles_HTTP_Handler(srv))                     // 获取文章列表
+	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle_HTTP_Handler(srv)) // 新建文章
+	r.GET("/v1/get/article", _BlogService_GetOneArticle_HTTP_Handler(srv))                 // 获取文章详情(TODO get方法还未支持)
 }
 
 func _BlogService_GetArticles_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {

@@ -272,12 +272,20 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 
 	var methods []*method
 	for _, m := range service.Methods {
+		leading := m.Comments.Leading.String()
+		if leading != "" {
+			leading = strings.Split(leading, "\n")[0]
+		}
 		rule, ok := proto.GetExtension(m.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
 		if rule != nil && ok {
 			for _, bind := range rule.AdditionalBindings {
-				methods = append(methods, buildHTTPRule(g, m, bind))
+				tmpMethod := buildHTTPRule(g, m, bind)
+				tmpMethod.FirstLineComment = leading
+				methods = append(methods, tmpMethod)
 			}
-			methods = append(methods, buildHTTPRule(g, m, rule))
+			tmpMethod := buildHTTPRule(g, m, rule)
+			tmpMethod.FirstLineComment = leading
+			methods = append(methods, tmpMethod)
 		}
 	}
 
@@ -285,7 +293,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 	g.P("func Register", serverType, "(s *", ginPackage.Ident("Engine"), ", srv ", serverType, ") {")
 	g.P(`r := s.Group("/")`)
 	for _, m := range methods {
-		g.P(fmt.Sprintf(`r.%v("%v", %v(srv))`, m.Method, m.Path, httpHandlerName(service.GoName, m.Name, m.Num)))
+		g.P(fmt.Sprintf(`r.%v("%v", %v(srv))`, m.Method, m.Path, httpHandlerName(service.GoName, m.Name, m.Num)), m.FirstLineComment)
 	}
 	g.P("}")
 	g.P()
@@ -393,10 +401,11 @@ func httpHandlerName(serivceName, methodName string, num int) string {
 }
 
 type method struct {
-	Name    string // SayHello
-	Num     int    // 一个 rpc 方法可以对应多个 http 请求
-	Request string // SayHelloReq
-	Reply   string // SayHelloResp
+	FirstLineComment string
+	Name             string // SayHello
+	Num              int    // 一个 rpc 方法可以对应多个 http 请求
+	Request          string // SayHelloReq
+	Reply            string // SayHelloResp
 	// http_rule
 	Path         string // 路由
 	Method       string // HTTP Method

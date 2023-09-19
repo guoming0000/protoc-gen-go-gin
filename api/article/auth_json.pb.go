@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.2
 // - protoc            v4.24.2
-// source: api/article/auth.proto
+// source: api/auth.proto
 
 package article
 
@@ -39,5 +39,21 @@ func (m *PushReply) Unmarshal(buf []byte) error {
 }
 
 func (m *PushReply) UnmarshalString(str string) error {
+	return sonic.UnmarshalString(str, m)
+}
+
+func (m *RealResp) Marshal() ([]byte, error) {
+	return sonic.Marshal(m)
+}
+
+func (m *RealResp) MarshalString() (string, error) {
+	return sonic.MarshalString(m)
+}
+
+func (m *RealResp) Unmarshal(buf []byte) error {
+	return sonic.Unmarshal(buf, m)
+}
+
+func (m *RealResp) UnmarshalString(str string) error {
 	return sonic.UnmarshalString(str, m)
 }
