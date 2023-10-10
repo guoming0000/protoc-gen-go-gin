@@ -307,8 +307,15 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("func ", httpHandlerName(service.GoName, m.Name, m.Num), "(srv ", serverType, ") func(g *gin.Context) {")
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
-		g.P(`ctx := api.NewContext(g)
-			err := ctx.ShouldBindJSON(req)
+		g.P(`var err error
+			ctx := api.NewContext(g)
+			if ctx.Request.Header.Get("Content-Type")=="application/x-www-form-urlencoded"{
+				ctx.Request.ParseForm()
+				params := ctx.Request.FormValue("params")
+				err = sonic.UnmarshalString(params,&req)
+			} else {
+				err = ctx.ShouldBindJSON(req)
+			}
 			err = checkValidate(err)
 			if err != nil {
 				setRetJSON(&ctx, nil, err)
