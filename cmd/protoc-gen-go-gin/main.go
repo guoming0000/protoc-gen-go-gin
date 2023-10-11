@@ -48,14 +48,16 @@ func main() {
 }
 
 const (
-	gocoreApi    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
-	ecodePackage = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
-	utilsPacakge = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
-	httpRequest  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
-	ginPackage   = protogen.GoImportPath("github.com/gin-gonic/gin")
-	sonicPackage = protogen.GoImportPath("github.com/bytedance/sonic")
-	httpPackage  = protogen.GoImportPath("net/http")
-	ctxPackage   = protogen.GoImportPath("context")
+	gocoreApi         = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	ecodePackage      = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	utilsPacakge      = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
+	httpRequest       = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
+	ginPackage        = protogen.GoImportPath("github.com/gin-gonic/gin")
+	ginBindingPackage = protogen.GoImportPath("github.com/gin-gonic/gin/binding")
+	sonicPackage      = protogen.GoImportPath("github.com/bytedance/sonic")
+	httpPackage       = protogen.GoImportPath("net/http")
+	ctxPackage        = protogen.GoImportPath("context")
+	stringsPackage    = protogen.GoImportPath("strings")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -133,6 +135,30 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}
 	ctx.RetJSON(resp, err)
 	}`)
+	g.P()
+
+	g.P(fmt.Sprintf(`func parseReq(g *%s, ctx *api.Context, req interface{}) (err error) {
+	reqPath := g.FullPath()
+	if %s(reqPath, "/v2/") {
+		ctx.Request.ParseForm()
+		params := ctx.Request.FormValue("params")
+		err = %s(params, req)
+		if err != nil {
+			errMsg := "params not exist or unmarshal failed:" + err.Error()
+			return %s(-1, errMsg)
+		}
+		validator := %s
+		err = validator.ValidateStruct(req)
+	} else {
+		err = ctx.ShouldBindJSON(req)
+	}
+	return
+	}`, g.QualifiedGoIdent(ginPackage.Ident("Context")),
+		g.QualifiedGoIdent(stringsPackage.Ident("HasPrefix")),
+		g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
+		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")),
+		g.QualifiedGoIdent(ginBindingPackage.Ident("Validator")),
+	))
 	g.P()
 
 }
@@ -307,8 +333,9 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("func ", httpHandlerName(service.GoName, m.Name, m.Num), "(srv ", serverType, ") func(g *gin.Context) {")
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
-		g.P(`ctx := api.NewContext(g)
-			err := ctx.ShouldBindJSON(req)
+		g.P(`var err error
+			ctx := api.NewContext(g)
+			err = parseReq(g, &ctx, req)
 			err = checkValidate(err)
 			if err != nil {
 				setRetJSON(&ctx, nil, err)
