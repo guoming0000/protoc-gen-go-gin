@@ -48,15 +48,16 @@ func main() {
 }
 
 const (
-	gocoreApi      = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
-	ecodePackage   = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
-	utilsPacakge   = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
-	httpRequest    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
-	ginPackage     = protogen.GoImportPath("github.com/gin-gonic/gin")
-	sonicPackage   = protogen.GoImportPath("github.com/bytedance/sonic")
-	httpPackage    = protogen.GoImportPath("net/http")
-	ctxPackage     = protogen.GoImportPath("context")
-	stringsPackage = protogen.GoImportPath("strings")
+	gocoreApi         = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	ecodePackage      = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	utilsPacakge      = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
+	httpRequest       = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
+	ginPackage        = protogen.GoImportPath("github.com/gin-gonic/gin")
+	ginBindingPackage = protogen.GoImportPath("github.com/gin-gonic/gin/binding")
+	sonicPackage      = protogen.GoImportPath("github.com/bytedance/sonic")
+	httpPackage       = protogen.GoImportPath("net/http")
+	ctxPackage        = protogen.GoImportPath("context")
+	stringsPackage    = protogen.GoImportPath("strings")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -142,6 +143,12 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 		ctx.Request.ParseForm()
 		params := ctx.Request.FormValue("params")
 		err = %s(params, req)
+		if err != nil {
+			errMsg := "params not exist or unmarshal failed:" + err.Error()
+			return %s(-1, errMsg)
+		}
+		validator := %s
+		err = validator.ValidateStruct(req)
 	} else {
 		err = ctx.ShouldBindJSON(req)
 	}
@@ -149,6 +156,8 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}`, g.QualifiedGoIdent(ginPackage.Ident("Context")),
 		g.QualifiedGoIdent(stringsPackage.Ident("HasPrefix")),
 		g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
+		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")),
+		g.QualifiedGoIdent(ginBindingPackage.Ident("Validator")),
 	))
 	g.P()
 
