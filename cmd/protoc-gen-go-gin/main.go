@@ -48,14 +48,15 @@ func main() {
 }
 
 const (
-	gocoreApi    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
-	ecodePackage = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
-	utilsPacakge = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
-	httpRequest  = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
-	ginPackage   = protogen.GoImportPath("github.com/gin-gonic/gin")
-	sonicPackage = protogen.GoImportPath("github.com/bytedance/sonic")
-	httpPackage  = protogen.GoImportPath("net/http")
-	ctxPackage   = protogen.GoImportPath("context")
+	gocoreApi      = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api")
+	ecodePackage   = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/api/ecode")
+	utilsPacakge   = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils")
+	httpRequest    = protogen.GoImportPath("github.com/sunmi-OS/gocore/v2/utils/http-request")
+	ginPackage     = protogen.GoImportPath("github.com/gin-gonic/gin")
+	sonicPackage   = protogen.GoImportPath("github.com/bytedance/sonic")
+	httpPackage    = protogen.GoImportPath("net/http")
+	ctxPackage     = protogen.GoImportPath("context")
+	stringsPackage = protogen.GoImportPath("strings")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -133,6 +134,22 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}
 	ctx.RetJSON(resp, err)
 	}`)
+	g.P()
+
+	g.P(fmt.Sprintf(`func parseReq(g *%s, ctx *api.Context, req interface{}) (err error) {
+	reqPath := g.FullPath()
+	if %s(reqPath, "/v2/") {
+		ctx.Request.ParseForm()
+		params := ctx.Request.FormValue("params")
+		err = %s(params, req)
+	} else {
+		err = ctx.ShouldBindJSON(req)
+	}
+	return
+	}`, g.QualifiedGoIdent(ginPackage.Ident("Context")),
+		g.QualifiedGoIdent(stringsPackage.Ident("HasPrefix")),
+		g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
+	))
 	g.P()
 
 }
@@ -309,13 +326,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("req := &", m.Request, "{}")
 		g.P(`var err error
 			ctx := api.NewContext(g)
-			if ctx.Request.Header.Get("Content-Type")=="application/x-www-form-urlencoded"{
-				ctx.Request.ParseForm()
-				params := ctx.Request.FormValue("params")
-				err = sonic.UnmarshalString(params,&req)
-			} else {
-				err = ctx.ShouldBindJSON(req)
-			}
+			err = parseReq(g, &ctx, req)
 			err = checkValidate(err)
 			if err != nil {
 				setRetJSON(&ctx, nil, err)
