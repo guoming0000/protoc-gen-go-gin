@@ -64,3 +64,6 @@ type GetArticlesReq struct {
 - [x] 支持gin形式的binding参数校验方法
 - [] 支持枚举
 - [x] 支持生成swagger 2023.9.7(待优化)
+- [] 支持配置请求头
+- [] 支持配置非标准json注解
+- [] 支持通过yapi生成proto3

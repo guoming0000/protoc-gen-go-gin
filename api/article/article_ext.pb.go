@@ -7,8 +7,13 @@
 package article
 
 import (
+	sonic "github.com/bytedance/sonic"
+	gin "github.com/gin-gonic/gin"
+	binding "github.com/gin-gonic/gin/binding"
 	api "github.com/sunmi-OS/gocore/v2/api"
+	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	utils "github.com/sunmi-OS/gocore/v2/utils"
+	strings "strings"
 )
 
 type TResponse[T any] struct {
@@ -51,4 +56,22 @@ func setRetJSON(ctx *api.Context, resp interface{}, err error) {
 		return
 	}
 	ctx.RetJSON(resp, err)
+}
+
+func parseReq(g *gin.Context, ctx *api.Context, req interface{}) (err error) {
+	reqPath := g.FullPath()
+	if strings.HasPrefix(reqPath, "/v2/") {
+		ctx.Request.ParseForm()
+		params := ctx.Request.FormValue("params")
+		err = sonic.UnmarshalString(params, req)
+		if err != nil {
+			errMsg := "params not exist or unmarshal failed:" + err.Error()
+			return ecode.NewV2(-1, errMsg)
+		}
+		validator := binding.Validator
+		err = validator.ValidateStruct(req)
+	} else {
+		err = ctx.ShouldBindJSON(req)
+	}
+	return
 }

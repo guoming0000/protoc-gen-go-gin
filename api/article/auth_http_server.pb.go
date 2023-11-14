@@ -45,8 +45,9 @@ func RegisterAuthServiceHTTPServer(s *gin.Engine, srv AuthServiceHTTPServer) {
 func _AuthService_Push_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &PushReq{}
+		var err error
 		ctx := api.NewContext(g)
-		err := ctx.ShouldBindJSON(req)
+		err = parseReq(g, &ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
@@ -60,8 +61,9 @@ func _AuthService_Push_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Conte
 func _AuthService_Pull_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &PushReq{}
+		var err error
 		ctx := api.NewContext(g)
-		err := ctx.ShouldBindJSON(req)
+		err = parseReq(g, &ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)

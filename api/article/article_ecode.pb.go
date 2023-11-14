@@ -31,7 +31,7 @@ var (
 		ERR_PRODUCT_APP_FOUND_FAIL:       "product app found fail",
 		ERR_REGISTER_DEVICE_LIMIT:        "register device limit",
 		ERR_REGISTER_DEVICE_SINGLE_FAILE: "register device single faile",
-		ERR_REGISTER_DEVICE_BATCH_FAILE:  "register device batch faile",
+		ERR_REGISTER_DEVICE_BATCH_FAILE:  "Register device batch fail !",
 	}
 )
 

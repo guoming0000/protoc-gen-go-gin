@@ -110,7 +110,7 @@ func generateErrorsContent(file *protogen.File, g *protogen.GeneratedFile) {
 	for _, enum := range file.Enums {
 		for _, v := range enum.Values {
 			// make v.Desc.Name() to camel case
-			g.P(v.Desc.Name(), ": \"", err2word(string(v.Desc.Name())), "\",")
+			g.P(v.Desc.Name(), ": \"", makeErrString(v.Comments, string(v.Desc.Name())), "\",")
 		}
 		g.P()
 	}
@@ -156,6 +156,13 @@ func generateErrorsContent(file *protogen.File, g *protogen.GeneratedFile) {
 			g.P()
 		}
 	}
+}
+
+func makeErrString(comment protogen.CommentSet, name string) string {
+	if comment.Trailing.String() != "" {
+		return strings.TrimSpace(strings.Replace(comment.Trailing.String(), "//", "", 1))
+	}
+	return err2word(name)
 }
 
 func err2word(name string) string {
