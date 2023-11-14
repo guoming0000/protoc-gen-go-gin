@@ -60,10 +60,10 @@ type GetArticlesReq struct {
 ```
 ## TODO
 - [x] 支持proto-gen-error-go
-- [x] 支持自定义错误码
+- [x] 支持自定义错误码，支持通过注释生成错误码字符串
 - [x] 支持gin形式的binding参数校验方法
-- [] 支持枚举
+- [ ] 支持枚举
 - [x] 支持生成swagger 2023.9.7(待优化)
-- [] 支持配置请求头
-- [] 支持配置非标准json注解
-- [] 支持通过yapi生成proto3
+- [ ] 支持配置请求头
+- [ ] 支持配置非标准json注解
+- [ ] 支持通过yapi生成proto3
