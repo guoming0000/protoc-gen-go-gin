@@ -134,7 +134,15 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 		return
 	}
 	ctx.RetJSON(resp, err)
-	}`)
+	}
+
+	func setRetOrigin(ctx *api.Context, resp interface{}) {
+		if utils.GetMetaData(ctx.Request.Context(), customReturnKey) != "" {
+			return
+		}
+	`)
+	g.P(`ctx.JSON(`, httpPackage.Ident("StatusOK"), `, resp)`)
+	g.P(`}`)
 	g.P()
 
 	g.P(fmt.Sprintf(`func parseReq(g *%s, ctx *api.Context, req interface{}) (err error) {
@@ -258,6 +266,7 @@ func generateHttpClientContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}
 }
 
+// Method(*api.Context, *MethodReq) (*MethodResp, error)
 func serverSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
 	ret := "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
 	var reqArgs []string
@@ -302,15 +311,21 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		if leading != "" {
 			leading = strings.Split(leading, "\n")[0]
 		}
+		tailing := m.Comments.Trailing.String()
+		if tailing != "" {
+			tailing = strings.TrimSpace(strings.Replace(tailing, "//", "", 1))
+		}
 		rule, ok := proto.GetExtension(m.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
 		if rule != nil && ok {
 			for _, bind := range rule.AdditionalBindings {
 				tmpMethod := buildHTTPRule(g, m, bind)
 				tmpMethod.FirstLineComment = leading
+				tmpMethod.TailingComment = tailing
 				methods = append(methods, tmpMethod)
 			}
 			tmpMethod := buildHTTPRule(g, m, rule)
 			tmpMethod.FirstLineComment = leading
+			tmpMethod.TailingComment = tailing
 			methods = append(methods, tmpMethod)
 		}
 	}
@@ -330,20 +345,27 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 			// 只生成一个即可
 			continue
 		}
+
 		g.P("func ", httpHandlerName(service.GoName, m.Name, m.Num), "(srv ", serverType, ") func(g *gin.Context) {")
 		g.P("return func(g *", ginPackage.Ident("Context"), ") {")
 		g.P("req := &", m.Request, "{}")
+		defaultRetMethodOne := `setRetJSON(&ctx, nil, err)`
+		defaultRetMethodTwo := `setRetJSON(&ctx, resp, err)`
+		if m.TailingComment != "" && strings.Contains(m.TailingComment, "output=origin") {
+			defaultRetMethodOne = `setRetJSON(&ctx, nil, err)`
+			defaultRetMethodTwo = `setRetOrigin(&ctx, resp)`
+		}
 		g.P(`var err error
 			ctx := api.NewContext(g)
 			err = parseReq(g, &ctx, req)
 			err = checkValidate(err)
-			if err != nil {
-				setRetJSON(&ctx, nil, err)
-				return
-		}`)
+			if err != nil {`)
+		g.P(defaultRetMethodOne)
+		g.P(`return`)
+		g.P(`}`)
 		g.P("resp, err := srv.", m.Name, "(&ctx, req)")
-		g.P(`setRetJSON(&ctx, resp, err)
-		}}`)
+		g.P(defaultRetMethodTwo)
+		g.P(`}}`)
 		g.P()
 	}
 }
@@ -429,6 +451,7 @@ func httpHandlerName(serivceName, methodName string, num int) string {
 
 type method struct {
 	FirstLineComment string
+	TailingComment   string
 	Name             string // SayHello
 	Num              int    // 一个 rpc 方法可以对应多个 http 请求
 	Request          string // SayHelloReq

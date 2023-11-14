@@ -42,6 +42,22 @@ func (m *GetArticlesReply) UnmarshalString(str string) error {
 	return sonic.UnmarshalString(str, m)
 }
 
+func (m *GetArticlesReplyPure) Marshal() ([]byte, error) {
+	return sonic.Marshal(m)
+}
+
+func (m *GetArticlesReplyPure) MarshalString() (string, error) {
+	return sonic.MarshalString(m)
+}
+
+func (m *GetArticlesReplyPure) Unmarshal(buf []byte) error {
+	return sonic.Unmarshal(buf, m)
+}
+
+func (m *GetArticlesReplyPure) UnmarshalString(str string) error {
+	return sonic.UnmarshalString(str, m)
+}
+
 func (m *Article) Marshal() ([]byte, error) {
 	return sonic.Marshal(m)
 }

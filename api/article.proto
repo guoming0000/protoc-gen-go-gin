@@ -4,6 +4,7 @@ syntax = "proto3";
 option go_package = "api/article";
 
 import "google/api/annotations.proto";
+import "google/protobuf/any.proto";
 
 // RPC 服务名和方法名，均使用首字母大写驼峰风格，例如service FooService{ rpc GetSomething() }
 // blog service is a blog demo
@@ -15,6 +16,11 @@ service BlogService {
     rpc CreateArticle(Article) returns (Article) { option (google.api.http) = { post: "/v1/author/{author_id}/articles"}; }
     // 获取文章详情(TODO get方法还未支持)
     rpc GetOneArticle(GetArticlesReq) returns (GetArticlesReply) { option (google.api.http) = { get: "/v1/get/article"}; }
+
+    rpc GetOneArticle2(GetArticlesReq) returns (GetArticlesReplyPure) { // output=origin
+        option (google.api.http) = { get: "/v1/get/article"};
+    }
+
 }
 
 // 消息名使用首字母大写驼峰风格(CamelCase)，例如message StudentReq { ... }
@@ -36,9 +42,16 @@ message GetArticlesReq {
     string test_str = 8; //  binding:"required"
 }
 
+// 重要注释1
 message GetArticlesReply {
     int64 total = 1;  // binding:"required"
-    repeated Article articles = 2;
+    repeated Article articles = 2; // omitempty=false
+}
+
+message GetArticlesReplyPure { // origin=true
+    int64 Code = 1;
+    string Message = 2;
+    repeated Article Data = 3;
 }
 
 message Article {

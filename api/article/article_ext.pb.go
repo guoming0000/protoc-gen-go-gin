@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-gin v0.0.2
 // - protoc            v4.24.2
-// source: api/auth.proto
+// source: api/article.proto
 
 package article
 
@@ -13,6 +13,7 @@ import (
 	api "github.com/sunmi-OS/gocore/v2/api"
 	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	utils "github.com/sunmi-OS/gocore/v2/utils"
+	http "net/http"
 	strings "strings"
 )
 
@@ -56,6 +57,14 @@ func setRetJSON(ctx *api.Context, resp interface{}, err error) {
 		return
 	}
 	ctx.RetJSON(resp, err)
+}
+
+func setRetOrigin(ctx *api.Context, resp interface{}) {
+	if utils.GetMetaData(ctx.Request.Context(), customReturnKey) != "" {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
 }
 
 func parseReq(g *gin.Context, ctx *api.Context, req interface{}) (err error) {

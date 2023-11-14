@@ -4,6 +4,7 @@
 package article
 
 import (
+	_ "github.com/golang/protobuf/ptypes/any"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 )
 
@@ -22,9 +23,16 @@ type GetArticlesReq struct {
 	TestStr  string                   `json:"test_str" binding:"required"`
 }
 
+// 重要注释1
 type GetArticlesReply struct {
 	Total    int64      `json:"total" binding:"required"`
-	Articles []*Article `json:"articles,omitempty"`
+	Articles []*Article `json:"articles"`
+}
+
+type GetArticlesReplyPure struct {
+	Code    int64      `json:"Code,omitempty"`
+	Message string     `json:"Message,omitempty"`
+	Data    []*Article `json:"Data,omitempty"`
 }
 
 type Article struct {

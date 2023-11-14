@@ -21,6 +21,7 @@ type BlogServiceHTTPClient interface {
 	CreateArticle(context.Context, *Article) (*TResponse[Article], error)
 	// 获取文章详情(TODO get方法还未支持)
 	GetOneArticle(context.Context, *GetArticlesReq) (*TResponse[GetArticlesReply], error)
+	GetOneArticle2(context.Context, *GetArticlesReq) (*TResponse[GetArticlesReplyPure], error)
 }
 
 type BlogServiceHTTPClientImpl struct {
@@ -56,6 +57,10 @@ func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx context.Context, req *Arti
 }
 
 func (c *BlogServiceHTTPClientImpl) GetOneArticle(ctx context.Context, req *GetArticlesReq) (*TResponse[GetArticlesReply], error) {
+	// TODO: GET method not support
+	return nil, ecode.NewV2(-1, "GET method not support")
+}
+func (c *BlogServiceHTTPClientImpl) GetOneArticle2(ctx context.Context, req *GetArticlesReq) (*TResponse[GetArticlesReplyPure], error) {
 	// TODO: GET method not support
 	return nil, ecode.NewV2(-1, "GET method not support")
 }

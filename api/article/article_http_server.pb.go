@@ -20,6 +20,7 @@ type BlogServiceHTTPServer interface {
 	CreateArticle(*api.Context, *Article) (*Article, error)
 	// 获取文章详情(TODO get方法还未支持)
 	GetOneArticle(*api.Context, *GetArticlesReq) (*GetArticlesReply, error)
+	GetOneArticle2(*api.Context, *GetArticlesReq) (*GetArticlesReplyPure, error)
 }
 
 func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
@@ -28,6 +29,7 @@ func RegisterBlogServiceHTTPServer(s *gin.Engine, srv BlogServiceHTTPServer) {
 	r.POST("/v1/articles", _BlogService_GetArticles_HTTP_Handler(srv))                     // 获取文章列表
 	r.POST("/v1/author/:author_id/articles", _BlogService_CreateArticle_HTTP_Handler(srv)) // 新建文章
 	r.GET("/v1/get/article", _BlogService_GetOneArticle_HTTP_Handler(srv))                 // 获取文章详情(TODO get方法还未支持)
+	r.GET("/v1/get/article", _BlogService_GetOneArticle2_HTTP_Handler(srv))
 }
 
 func _BlogService_GetArticles_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
@@ -75,5 +77,21 @@ func _BlogService_GetOneArticle_HTTP_Handler(srv BlogServiceHTTPServer) func(g *
 		}
 		resp, err := srv.GetOneArticle(&ctx, req)
 		setRetJSON(&ctx, resp, err)
+	}
+}
+
+func _BlogService_GetOneArticle2_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gin.Context) {
+	return func(g *gin.Context) {
+		req := &GetArticlesReq{}
+		var err error
+		ctx := api.NewContext(g)
+		err = parseReq(g, &ctx, req)
+		err = checkValidate(err)
+		if err != nil {
+			setRetJSON(&ctx, nil, err)
+			return
+		}
+		resp, err := srv.GetOneArticle2(&ctx, req)
+		setRetOrigin(&ctx, resp)
 	}
 }
