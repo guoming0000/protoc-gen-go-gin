@@ -28,3 +28,19 @@ type RealResp struct {
 	Code    int32       `json:"code,omitempty"`
 	Message string      `json:"message,omitempty"`
 }
+
+type UploadOssdk3RdReq struct {
+	Operator   string `json:"operator,omitempty"`
+	SdkUrlUuid string `json:"sdk_url_uuid,omitempty"`
+	SdkOs      string `json:"sdk_os,omitempty"`
+	FileName   string `json:"file_name,omitempty"`
+}
+
+type GetOneArticlePureReq struct {
+}
+
+type GetOneArticlePureResp struct {
+	Code    int64                `json:"Code,omitempty"`
+	Message string               `json:"Message,omitempty"`
+	Data    []*UploadOssdk3RdReq `json:"Data,omitempty"`
+}

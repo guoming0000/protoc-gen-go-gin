@@ -15,7 +15,7 @@ cd cmd/protoc-gen-openapi
 go build
 cd ../../
 
-go run swagger.go api/article/auth.proto
+go run swagger.go api/auth.proto api/article/auth.swagger.proto
 
 protoc --proto_path=. \
         --proto_path=./third_party \

@@ -35,7 +35,13 @@ service AuthService {
       body: "*"
     }; // 方法屁股注释1 无效
   }
-  //rpc Pull(PushReq) returns (UploadOssdk3rdReq)  { option (google.api.http) = { post: "/private/pull"}; }
+
+  rpc Pull(PushReq) returns (TRealResp)  { option (google.api.http) = { post: "/private/pull"}; }
+
+  // 测试特殊的返回
+  rpc GetOneArticlePure(GetOneArticlePureReq) returns (GetOneArticlePureResp) { // output=origin
+    option (google.api.http) = { get: "/v1/get/article"};
+  }
 }
 
 // 这个是PushReq的标题2
@@ -54,25 +60,39 @@ message PushReply {
   string sdk_url_uuid = 2; // 后面的备注
 }
 
-//
-//message RealResp {
-//  google.protobuf.Any data = 1;
-//  int32 code = 2;
-//  string message = 3;
-//}
-//
-//
-//message UploadOssdk3rdReq {
-//  string operator = 1;
-//  string sdk_url_uuid = 2;
-//  string sdk_os = 3;
-//  string file_name = 4;
-//}
 
+message RealResp {
+  google.protobuf.Any data = 1;
+  int32 code = 2;
+  string message = 3;
+}
+
+//
+message UploadOssdk3rdReq {
+  string operator = 1;
+  string sdk_url_uuid = 2;
+  string sdk_os = 3;
+  string file_name = 4;
+}
+
+message GetOneArticlePureReq {
+
+}
+
+message GetOneArticlePureResp {
+  int64 Code = 1;
+  string Message = 2;
+  repeated UploadOssdk3rdReq Data = 3;
+}
 
 
 message TPushReply {
    int32 code = 1; // binding:"required"
    string msg = 2; // binding:"required"
    PushReply data = 3; // binding:"required"
+}
+message TRealResp {
+   int32 code = 1; // binding:"required"
+   string msg = 2; // binding:"required"
+   RealResp data = 3; // binding:"required"
 }

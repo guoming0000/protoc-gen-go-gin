@@ -35,7 +35,13 @@ service AuthService {
       body: "*"
     }; // 方法屁股注释1 无效
   }
+
   rpc Pull(PushReq) returns (RealResp)  { option (google.api.http) = { post: "/private/pull"}; }
+
+  // 测试特殊的返回
+  rpc GetOneArticlePure(GetOneArticlePureReq) returns (GetOneArticlePureResp) { // output=origin
+    option (google.api.http) = { get: "/v1/get/article"};
+  }
 }
 
 // 这个是PushReq的标题2
@@ -62,12 +68,20 @@ message RealResp {
 }
 
 //
-//message UploadOssdk3rdReq {
-//  string operator = 1;
-//  string sdk_url_uuid = 2;
-//  string sdk_os = 3;
-//  string file_name = 4;
-//}
+message UploadOssdk3rdReq {
+  string operator = 1;
+  string sdk_url_uuid = 2;
+  string sdk_os = 3;
+  string file_name = 4;
+}
 
+message GetOneArticlePureReq {
 
+}
+
+message GetOneArticlePureResp {
+  int64 Code = 1;
+  string Message = 2;
+  repeated UploadOssdk3rdReq Data = 3;
+}
 

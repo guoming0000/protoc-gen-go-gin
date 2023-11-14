@@ -57,3 +57,51 @@ func (m *RealResp) Unmarshal(buf []byte) error {
 func (m *RealResp) UnmarshalString(str string) error {
 	return sonic.UnmarshalString(str, m)
 }
+
+func (m *UploadOssdk3RdReq) Marshal() ([]byte, error) {
+	return sonic.Marshal(m)
+}
+
+func (m *UploadOssdk3RdReq) MarshalString() (string, error) {
+	return sonic.MarshalString(m)
+}
+
+func (m *UploadOssdk3RdReq) Unmarshal(buf []byte) error {
+	return sonic.Unmarshal(buf, m)
+}
+
+func (m *UploadOssdk3RdReq) UnmarshalString(str string) error {
+	return sonic.UnmarshalString(str, m)
+}
+
+func (m *GetOneArticlePureReq) Marshal() ([]byte, error) {
+	return sonic.Marshal(m)
+}
+
+func (m *GetOneArticlePureReq) MarshalString() (string, error) {
+	return sonic.MarshalString(m)
+}
+
+func (m *GetOneArticlePureReq) Unmarshal(buf []byte) error {
+	return sonic.Unmarshal(buf, m)
+}
+
+func (m *GetOneArticlePureReq) UnmarshalString(str string) error {
+	return sonic.UnmarshalString(str, m)
+}
+
+func (m *GetOneArticlePureResp) Marshal() ([]byte, error) {
+	return sonic.Marshal(m)
+}
+
+func (m *GetOneArticlePureResp) MarshalString() (string, error) {
+	return sonic.MarshalString(m)
+}
+
+func (m *GetOneArticlePureResp) Unmarshal(buf []byte) error {
+	return sonic.Unmarshal(buf, m)
+}
+
+func (m *GetOneArticlePureResp) UnmarshalString(str string) error {
+	return sonic.UnmarshalString(str, m)
+}

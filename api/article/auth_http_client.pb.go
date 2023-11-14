@@ -33,6 +33,8 @@ type AuthServiceHTTPClient interface {
 	// | 500    |                                   | 程序异常               |
 	Push(context.Context, *PushReq) (*TResponse[PushReply], error)
 	Pull(context.Context, *PushReq) (*TResponse[RealResp], error)
+	// 测试特殊的返回
+	GetOneArticlePure(context.Context, *GetOneArticlePureReq) (*TResponse[GetOneArticlePureResp], error)
 }
 
 type AuthServiceHTTPClientImpl struct {
@@ -65,4 +67,9 @@ func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq) (*TR
 		err = ecode.NewV2(resp.Code, resp.Msg)
 	}
 	return resp, err
+}
+
+func (c *AuthServiceHTTPClientImpl) GetOneArticlePure(ctx context.Context, req *GetOneArticlePureReq) (*TResponse[GetOneArticlePureResp], error) {
+	// TODO: GET method not support
+	return nil, ecode.NewV2(-1, "GET method not support")
 }

@@ -6,6 +6,34 @@ info:
     title: 商米助手 API
     version: 0.0.1
 paths:
+    /private/pull:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_Pull
+            parameters:
+                - name: name
+                  in: query
+                  description: name上面的备注
+                  schema:
+                    type: string
+                - name: page_count
+                  in: query
+                  schema:
+                    type: integer
+                    format: int64
+                - name: data_count
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TRealResp'
     /private/push:
         post:
             tags:
@@ -42,8 +70,41 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/TPushReply'
+    /v1/get/article:
+        get:
+            tags:
+                - AuthService
+            summary: 测试特殊的返回
+            operationId: AuthService_GetOneArticlePure
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetOneArticlePureResp'
 components:
     schemas:
+        GetOneArticlePureResp:
+            type: object
+            properties:
+                Code:
+                    type: integer
+                    format: int64
+                Message:
+                    type: string
+                Data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UploadOssdk3rdReq'
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         PushReply:
             type: object
             properties:
@@ -69,6 +130,16 @@ components:
                     type: integer
                     format: int32
             description: 这个是PushReq的标题2
+        RealResp:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/GoogleProtobufAny'
+                code:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
         TPushReply:
             required:
                 - code
@@ -83,5 +154,30 @@ components:
                     type: string
                 data:
                     $ref: '#/components/schemas/PushReply'
+        TRealResp:
+            required:
+                - code
+                - msg
+                - data
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                msg:
+                    type: string
+                data:
+                    $ref: '#/components/schemas/RealResp'
+        UploadOssdk3rdReq:
+            type: object
+            properties:
+                operator:
+                    type: string
+                sdk_url_uuid:
+                    type: string
+                sdk_os:
+                    type: string
+                file_name:
+                    type: string
 tags:
     - name: 商米助手

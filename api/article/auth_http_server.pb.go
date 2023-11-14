@@ -32,6 +32,8 @@ type AuthServiceHTTPServer interface {
 	// | 500    |                                   | 程序异常               |
 	Push(*api.Context, *PushReq) (*PushReply, error)
 	Pull(*api.Context, *PushReq) (*RealResp, error)
+	// 测试特殊的返回
+	GetOneArticlePure(*api.Context, *GetOneArticlePureReq) (*GetOneArticlePureResp, error)
 }
 
 func RegisterAuthServiceHTTPServer(s *gin.Engine, srv AuthServiceHTTPServer) {
@@ -40,6 +42,7 @@ func RegisterAuthServiceHTTPServer(s *gin.Engine, srv AuthServiceHTTPServer) {
 	r.POST("/private/v1/push2", _AuthService_Push_HTTP_Handler(srv)) // Push发送1 ||商米助手
 	r.POST("/private/push", _AuthService_Push_HTTP_Handler(srv))     // Push发送1 ||商米助手
 	r.POST("/private/pull", _AuthService_Pull_HTTP_Handler(srv))
+	r.GET("/v1/get/article", _AuthService_GetOneArticlePure_HTTP_Handler(srv)) // 测试特殊的返回
 }
 
 func _AuthService_Push_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
@@ -71,5 +74,21 @@ func _AuthService_Pull_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Conte
 		}
 		resp, err := srv.Pull(&ctx, req)
 		setRetJSON(&ctx, resp, err)
+	}
+}
+
+func _AuthService_GetOneArticlePure_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
+	return func(g *gin.Context) {
+		req := &GetOneArticlePureReq{}
+		var err error
+		ctx := api.NewContext(g)
+		err = parseReq(g, &ctx, req)
+		err = checkValidate(err)
+		if err != nil {
+			setRetJSON(&ctx, nil, err)
+			return
+		}
+		resp, err := srv.GetOneArticlePure(&ctx, req)
+		setRetOrigin(&ctx, resp)
 	}
 }

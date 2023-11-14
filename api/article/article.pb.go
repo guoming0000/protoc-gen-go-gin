@@ -29,12 +29,6 @@ type GetArticlesReply struct {
 	Articles []*Article `json:"articles"`
 }
 
-type GetArticlesReplyPure struct {
-	Code    int64      `json:"Code,omitempty"`
-	Message string     `json:"Message,omitempty"`
-	Data    []*Article `json:"Data,omitempty"`
-}
-
 type Article struct {
 	// 标题名称上注释
 	Title    string `json:"title,omitempty"` // 标题名称右注释
