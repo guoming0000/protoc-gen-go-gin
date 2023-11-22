@@ -146,26 +146,9 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	g.P()
 
 	g.P(fmt.Sprintf(`func parseReq(g *%s, ctx *api.Context, req interface{}) (err error) {
-	reqPath := g.FullPath()
-	if %s(reqPath, "/v2/") {
-		ctx.Request.ParseForm()
-		params := ctx.Request.FormValue("params")
-		err = %s(params, req)
-		if err != nil {
-			errMsg := "params not exist or unmarshal failed:" + err.Error()
-			return %s(-1, errMsg)
-		}
-		validator := %s
-		err = validator.ValidateStruct(req)
-	} else {
 		err = ctx.ShouldBindJSON(req)
-	}
-	return
+		return
 	}`, g.QualifiedGoIdent(ginPackage.Ident("Context")),
-		g.QualifiedGoIdent(stringsPackage.Ident("HasPrefix")),
-		g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
-		g.QualifiedGoIdent(ecodePackage.Ident("NewV2")),
-		g.QualifiedGoIdent(ginBindingPackage.Ident("Validator")),
 	))
 	g.P()
 
@@ -268,7 +251,13 @@ func generateHttpClientContent(file *protogen.File, g *protogen.GeneratedFile) {
 
 // Method(*api.Context, *MethodReq) (*MethodResp, error)
 func serverSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
-	ret := "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
+	var ret string
+	if isOutputOrigin(method.Comments.Trailing.String()) {
+		ret = "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ")"
+	} else {
+		ret = "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
+	}
+
 	var reqArgs []string
 	reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(gocoreApi.Ident("Context")))
 	reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(method.Input.GoIdent))
@@ -292,6 +281,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("//")
 	}
 	g.Annotate(serverType, service.Location)
+	// type XXXHTTPServer interface {
 	g.P("type ", serverType, " interface {")
 	for _, m := range service.Methods {
 		if m.Desc.IsStreamingClient() || m.Desc.IsStreamingServer() {
@@ -351,7 +341,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P("req := &", m.Request, "{}")
 		defaultRetMethodOne := `setRetJSON(&ctx, nil, err)`
 		defaultRetMethodTwo := `setRetJSON(&ctx, resp, err)`
-		if m.TailingComment != "" && strings.Contains(m.TailingComment, "output=origin") {
+		if isOutputOrigin(m.TailingComment) {
 			defaultRetMethodOne = `setRetJSON(&ctx, nil, err)`
 			defaultRetMethodTwo = `setRetOrigin(&ctx, resp)`
 		}
@@ -363,7 +353,13 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		g.P(defaultRetMethodOne)
 		g.P(`return`)
 		g.P(`}`)
-		g.P("resp, err := srv.", m.Name, "(&ctx, req)")
+
+		if isOutputOrigin(m.TailingComment) {
+			g.P("resp := srv.", m.Name, "(&ctx, req)")
+		} else {
+			g.P("resp, err := srv.", m.Name, "(&ctx, req)")
+		}
+
 		g.P(defaultRetMethodTwo)
 		g.P(`}}`)
 		g.P()
@@ -517,4 +513,11 @@ func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, httpMethod, 
 	}
 	md.initPathParams()
 	return md
+}
+
+func isOutputOrigin(c string) bool {
+	if c != "" && strings.Contains(c, "output=origin") {
+		return true
+	}
+	return false
 }

@@ -33,7 +33,7 @@ type AuthServiceHTTPServer interface {
 	Push(*api.Context, *PushReq) (*PushReply, error)
 	Pull(*api.Context, *PushReq) (*RealResp, error)
 	// 测试特殊的返回
-	GetOneArticlePure(*api.Context, *GetOneArticlePureReq) (*GetOneArticlePureResp, error)
+	GetOneArticlePure(*api.Context, *GetOneArticlePureReq) *GetOneArticlePureResp
 }
 
 func RegisterAuthServiceHTTPServer(s *gin.Engine, srv AuthServiceHTTPServer) {
@@ -88,7 +88,7 @@ func _AuthService_GetOneArticlePure_HTTP_Handler(srv AuthServiceHTTPServer) func
 			setRetJSON(&ctx, nil, err)
 			return
 		}
-		resp, err := srv.GetOneArticlePure(&ctx, req)
+		resp := srv.GetOneArticlePure(&ctx, req)
 		setRetOrigin(&ctx, resp)
 	}
 }
