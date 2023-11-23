@@ -265,7 +265,12 @@ func serverSignature(g *protogen.GeneratedFile, method *protogen.Method) string 
 }
 
 func clientSignature(g *protogen.GeneratedFile, method *protogen.Method) string {
-	ret := "(*TResponse[" + g.QualifiedGoIdent(method.Output.GoIdent) + "], error)"
+	var ret string
+	if isOutputOrigin(method.Comments.Trailing.String()) {
+		ret = "(*" + g.QualifiedGoIdent(method.Output.GoIdent) + ", error)"
+	} else {
+		ret = "(*TResponse[" + g.QualifiedGoIdent(method.Output.GoIdent) + "], error)"
+	}
 	var reqArgs []string
 	reqArgs = append(reqArgs, g.QualifiedGoIdent(ctxPackage.Ident("Context")))
 	reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(method.Input.GoIdent))
@@ -297,26 +302,12 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 
 	var methods []*method
 	for _, m := range service.Methods {
-		leading := m.Comments.Leading.String()
-		if leading != "" {
-			leading = strings.Split(leading, "\n")[0]
-		}
-		tailing := m.Comments.Trailing.String()
-		if tailing != "" {
-			tailing = strings.TrimSpace(strings.Replace(tailing, "//", "", 1))
-		}
 		rule, ok := proto.GetExtension(m.Desc.Options(), annotations.E_Http).(*annotations.HttpRule)
 		if rule != nil && ok {
 			for _, bind := range rule.AdditionalBindings {
-				tmpMethod := buildHTTPRule(g, m, bind)
-				tmpMethod.FirstLineComment = leading
-				tmpMethod.TailingComment = tailing
-				methods = append(methods, tmpMethod)
+				methods = append(methods, buildHTTPRule(g, m, bind))
 			}
-			tmpMethod := buildHTTPRule(g, m, rule)
-			tmpMethod.FirstLineComment = leading
-			tmpMethod.TailingComment = tailing
-			methods = append(methods, tmpMethod)
+			methods = append(methods, buildHTTPRule(g, m, rule))
 		}
 	}
 
@@ -418,14 +409,23 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	// http method func
 	for _, m := range methods {
 		// func (c *XXXHttpClientImpl) XXX(ctx *Context, req *XXXRequest) (*XXXResponse, error)
-		g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*TResponse[", m.Reply, "], error) {")
+		if isOutputOrigin(m.TailingComment) {
+			g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*", m.Reply, ", error) {")
+		} else {
+			g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*TResponse[", m.Reply, "], error) {")
+		}
+
 		if m.Method == "GET" {
 			g.P(`// TODO: GET method not support
 				return nil, ecode.NewV2(-1, "GET method not support")
 			}`)
 			continue
 		}
-		g.P("resp := &TResponse[", m.Reply, "]{}")
+		if isOutputOrigin(m.TailingComment) {
+			g.P("resp := &", m.Reply, "{}")
+		} else {
+			g.P("resp := &TResponse[", m.Reply, "]{}")
+		}
 		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
 		g.P(fmt.Sprintf(`if err != nil {
 				return nil, err
@@ -502,14 +502,24 @@ func buildHTTPRule(g *protogen.GeneratedFile, m *protogen.Method, rule *annotati
 }
 
 func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, httpMethod, path string) *method {
+	leading := m.Comments.Leading.String()
+	if leading != "" {
+		leading = strings.Split(leading, "\n")[0]
+	}
+	tailing := m.Comments.Trailing.String()
+	if tailing != "" {
+		tailing = strings.TrimSpace(strings.Replace(tailing, "//", "", 1))
+	}
 	defer func() { methodSets[m.GoName]++ }()
 	md := &method{
-		Name:    m.GoName,
-		Num:     methodSets[m.GoName],
-		Request: g.QualifiedGoIdent(m.Input.GoIdent),
-		Reply:   g.QualifiedGoIdent(m.Output.GoIdent),
-		Path:    path,
-		Method:  httpMethod,
+		FirstLineComment: leading,
+		TailingComment:   tailing,
+		Name:             m.GoName,
+		Num:              methodSets[m.GoName],
+		Request:          g.QualifiedGoIdent(m.Input.GoIdent),
+		Reply:            g.QualifiedGoIdent(m.Output.GoIdent),
+		Path:             path,
+		Method:           httpMethod,
 	}
 	md.initPathParams()
 	return md
