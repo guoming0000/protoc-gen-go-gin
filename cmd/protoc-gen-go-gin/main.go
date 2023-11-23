@@ -145,11 +145,26 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	g.P(`}`)
 	g.P()
 
-	g.P(fmt.Sprintf(`func parseReq(g *%s, ctx *api.Context, req interface{}) (err error) {
+	g.P(fmt.Sprintf(`func parseReq(ctx *api.Context, req interface{}) (err error) {
+     if ctx.ContentType() == %s {
+		err = ctx.Request.ParseForm()
+		if err != nil {
+			return err
+		}
+		params := ctx.Request.FormValue("params")
+		err = %s(params, req)
+		if err != nil {
+			return err
+		}	
+		err = %v.ValidateStruct(req)
+	} else {
 		err = ctx.ShouldBindJSON(req)
-		return
-	}`, g.QualifiedGoIdent(ginPackage.Ident("Context")),
+	}`, g.QualifiedGoIdent(ginBindingPackage.Ident("MIMEPOSTForm")),
+		g.QualifiedGoIdent(sonicPackage.Ident("UnmarshalString")),
+		g.QualifiedGoIdent(ginBindingPackage.Ident("Validator")),
 	))
+	g.P(`return`)
+	g.P(`}`)
 	g.P()
 
 }
@@ -338,7 +353,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 		}
 		g.P(`var err error
 			ctx := api.NewContext(g)
-			err = parseReq(g, &ctx, req)
+			err = parseReq(&ctx, req)
 			err = checkValidate(err)
 			if err != nil {`)
 		g.P(defaultRetMethodOne)

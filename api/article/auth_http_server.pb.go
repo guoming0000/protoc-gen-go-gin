@@ -50,7 +50,7 @@ func _AuthService_Push_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Conte
 		req := &PushReq{}
 		var err error
 		ctx := api.NewContext(g)
-		err = parseReq(g, &ctx, req)
+		err = parseReq(&ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
@@ -66,7 +66,7 @@ func _AuthService_Pull_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Conte
 		req := &PushReq{}
 		var err error
 		ctx := api.NewContext(g)
-		err = parseReq(g, &ctx, req)
+		err = parseReq(&ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
@@ -82,7 +82,7 @@ func _AuthService_GetOneArticlePure_HTTP_Handler(srv AuthServiceHTTPServer) func
 		req := &GetOneArticlePureReq{}
 		var err error
 		ctx := api.NewContext(g)
-		err = parseReq(g, &ctx, req)
+		err = parseReq(&ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)

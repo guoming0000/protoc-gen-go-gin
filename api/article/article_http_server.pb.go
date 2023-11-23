@@ -35,7 +35,7 @@ func _BlogService_GetArticles_HTTP_Handler(srv BlogServiceHTTPServer) func(g *gi
 		req := &GetArticlesReq{}
 		var err error
 		ctx := api.NewContext(g)
-		err = parseReq(g, &ctx, req)
+		err = parseReq(&ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
@@ -51,7 +51,7 @@ func _BlogService_CreateArticle_HTTP_Handler(srv BlogServiceHTTPServer) func(g *
 		req := &Article{}
 		var err error
 		ctx := api.NewContext(g)
-		err = parseReq(g, &ctx, req)
+		err = parseReq(&ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)
@@ -67,7 +67,7 @@ func _BlogService_GetOneArticle_HTTP_Handler(srv BlogServiceHTTPServer) func(g *
 		req := &GetArticlesReq{}
 		var err error
 		ctx := api.NewContext(g)
-		err = parseReq(g, &ctx, req)
+		err = parseReq(&ctx, req)
 		err = checkValidate(err)
 		if err != nil {
 			setRetJSON(&ctx, nil, err)

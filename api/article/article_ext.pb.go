@@ -7,7 +7,8 @@
 package article
 
 import (
-	gin "github.com/gin-gonic/gin"
+	sonic "github.com/bytedance/sonic"
+	binding "github.com/gin-gonic/gin/binding"
 	api "github.com/sunmi-OS/gocore/v2/api"
 	utils "github.com/sunmi-OS/gocore/v2/utils"
 	http "net/http"
@@ -63,7 +64,20 @@ func setRetOrigin(ctx *api.Context, resp interface{}) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func parseReq(g *gin.Context, ctx *api.Context, req interface{}) (err error) {
-	err = ctx.ShouldBindJSON(req)
+func parseReq(ctx *api.Context, req interface{}) (err error) {
+	if ctx.ContentType() == binding.MIMEPOSTForm {
+		err = ctx.Request.ParseForm()
+		if err != nil {
+			return err
+		}
+		params := ctx.Request.FormValue("params")
+		err = sonic.UnmarshalString(params, req)
+		if err != nil {
+			return err
+		}
+		err = binding.Validator.ValidateStruct(req)
+	} else {
+		err = ctx.ShouldBindJSON(req)
+	}
 	return
 }
