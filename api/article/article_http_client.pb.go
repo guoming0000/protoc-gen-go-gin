@@ -38,7 +38,7 @@ func (c *BlogServiceHTTPClientImpl) GetArticles(ctx context.Context, req *GetArt
 		return nil, err
 	}
 	if resp.Code != 1 {
-		err = ecode.NewV2(resp.Code, resp.Msg)
+		err = ecode.NewV2(int(resp.Code), resp.Msg)
 	}
 	return resp, err
 }
@@ -50,7 +50,7 @@ func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx context.Context, req *Arti
 		return nil, err
 	}
 	if resp.Code != 1 {
-		err = ecode.NewV2(resp.Code, resp.Msg)
+		err = ecode.NewV2(int(resp.Code), resp.Msg)
 	}
 	return resp, err
 }

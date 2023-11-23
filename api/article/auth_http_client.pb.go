@@ -52,7 +52,7 @@ func (c *AuthServiceHTTPClientImpl) Push(ctx context.Context, req *PushReq) (*TR
 		return nil, err
 	}
 	if resp.Code != 1 {
-		err = ecode.NewV2(resp.Code, resp.Msg)
+		err = ecode.NewV2(int(resp.Code), resp.Msg)
 	}
 	return resp, err
 }
@@ -64,7 +64,7 @@ func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq) (*TR
 		return nil, err
 	}
 	if resp.Code != 1 {
-		err = ecode.NewV2(resp.Code, resp.Msg)
+		err = ecode.NewV2(int(resp.Code), resp.Msg)
 	}
 	return resp, err
 }

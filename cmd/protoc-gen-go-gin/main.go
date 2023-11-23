@@ -94,7 +94,7 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}
 
 	// TResponse
-	g.P("type TResponse[T any] struct {\n\tCode int    `json:\"code\"`\n\tData *T     `json:\"data\"`\n\tMsg  string `json:\"msg\"`\n}")
+	g.P("type TResponse[T any] struct {\n\tCode int32    `json:\"code\"`\n\tData *T     `json:\"data\"`\n\tMsg  string `json:\"msg\"`\n}")
 	g.P()
 
 	g.P("var validateErr error = ", gocoreApi.Ident("ErrorBind"))
@@ -431,7 +431,7 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 				return nil, err
 			}
 			if resp.Code != 1 {
-				err = %v(resp.Code, resp.Msg)
+				err = %v(int(resp.Code), resp.Msg)
 			}
 			return resp, err
 		}`, g.QualifiedGoIdent(ecodePackage.Ident("NewV2"))))

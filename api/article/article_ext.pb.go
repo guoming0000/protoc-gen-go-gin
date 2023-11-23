@@ -14,7 +14,7 @@ import (
 )
 
 type TResponse[T any] struct {
-	Code int    `json:"code"`
+	Code int32  `json:"code"`
 	Data *T     `json:"data"`
 	Msg  string `json:"msg"`
 }
