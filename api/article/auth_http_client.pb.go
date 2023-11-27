@@ -8,6 +8,7 @@ package article
 
 import (
 	context "context"
+	calloption "github.com/guoming0000/protoc-gen-go-gin/calloption"
 	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	http_request "github.com/sunmi-OS/gocore/v2/utils/http-request"
 )
@@ -31,10 +32,10 @@ type AuthServiceHTTPClient interface {
 	// | 10212  | no available license              | 没有可用license        |
 	// | 10213  | license download times not enough | license 下载次数不足   |
 	// | 500    |                                   | 程序异常               |
-	Push(context.Context, *PushReq) (*TResponse[PushReply], error)
-	Pull(context.Context, *PushReq) (*TResponse[RealResp], error)
+	Push(context.Context, *PushReq, ...calloption.CallOption) (*TResponse[PushReply], error)
+	Pull(context.Context, *PushReq, ...calloption.CallOption) (*TResponse[RealResp], error)
 	// 测试特殊的返回
-	GetOneArticlePure(context.Context, *GetOneArticlePureReq) (*GetOneArticlePureResp, error)
+	GetOneArticlePure(context.Context, *GetOneArticlePureReq, ...calloption.CallOption) (*GetOneArticlePureResp, error)
 }
 
 type AuthServiceHTTPClientImpl struct {
@@ -45,9 +46,13 @@ func NewAuthServiceHTTPClient(hh *http_request.HttpClient) AuthServiceHTTPClient
 	return &AuthServiceHTTPClientImpl{hh: hh}
 }
 
-func (c *AuthServiceHTTPClientImpl) Push(ctx context.Context, req *PushReq) (*TResponse[PushReply], error) {
+func (c *AuthServiceHTTPClientImpl) Push(ctx context.Context, req *PushReq, opts ...calloption.CallOption) (*TResponse[PushReply], error) {
 	resp := &TResponse[PushReply]{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/private/v1/push")
+	r := c.hh.Client.R().SetContext(ctx)
+	for _, opt := range opts {
+		opt(r)
+	}
+	_, err := r.SetBody(req).SetResult(resp).Post("/private/v1/push")
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +62,13 @@ func (c *AuthServiceHTTPClientImpl) Push(ctx context.Context, req *PushReq) (*TR
 	return resp, err
 }
 
-func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq) (*TResponse[RealResp], error) {
+func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq, opts ...calloption.CallOption) (*TResponse[RealResp], error) {
 	resp := &TResponse[RealResp]{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/private/pull")
+	r := c.hh.Client.R().SetContext(ctx)
+	for _, opt := range opts {
+		opt(r)
+	}
+	_, err := r.SetBody(req).SetResult(resp).Post("/private/pull")
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +78,7 @@ func (c *AuthServiceHTTPClientImpl) Pull(ctx context.Context, req *PushReq) (*TR
 	return resp, err
 }
 
-func (c *AuthServiceHTTPClientImpl) GetOneArticlePure(ctx context.Context, req *GetOneArticlePureReq) (*GetOneArticlePureResp, error) {
+func (c *AuthServiceHTTPClientImpl) GetOneArticlePure(ctx context.Context, req *GetOneArticlePureReq, opts ...calloption.CallOption) (*GetOneArticlePureResp, error) {
 	// TODO: GET method not support
 	return nil, ecode.NewV2(-1, "GET method not support")
 }

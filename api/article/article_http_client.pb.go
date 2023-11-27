@@ -8,6 +8,7 @@ package article
 
 import (
 	context "context"
+	calloption "github.com/guoming0000/protoc-gen-go-gin/calloption"
 	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	http_request "github.com/sunmi-OS/gocore/v2/utils/http-request"
 )
@@ -16,11 +17,11 @@ import (
 type BlogServiceHTTPClient interface {
 	// 获取文章列表
 	// 可以读取不多于999个文章列表
-	GetArticles(context.Context, *GetArticlesReq) (*TResponse[GetArticlesReply], error)
+	GetArticles(context.Context, *GetArticlesReq, ...calloption.CallOption) (*TResponse[GetArticlesReply], error)
 	// 新建文章
-	CreateArticle(context.Context, *Article) (*TResponse[Article], error)
+	CreateArticle(context.Context, *Article, ...calloption.CallOption) (*TResponse[Article], error)
 	// 获取文章详情(TODO get方法还未支持)
-	GetOneArticle(context.Context, *GetArticlesReq) (*TResponse[GetArticlesReply], error)
+	GetOneArticle(context.Context, *GetArticlesReq, ...calloption.CallOption) (*TResponse[GetArticlesReply], error)
 }
 
 type BlogServiceHTTPClientImpl struct {
@@ -31,9 +32,13 @@ func NewBlogServiceHTTPClient(hh *http_request.HttpClient) BlogServiceHTTPClient
 	return &BlogServiceHTTPClientImpl{hh: hh}
 }
 
-func (c *BlogServiceHTTPClientImpl) GetArticles(ctx context.Context, req *GetArticlesReq) (*TResponse[GetArticlesReply], error) {
+func (c *BlogServiceHTTPClientImpl) GetArticles(ctx context.Context, req *GetArticlesReq, opts ...calloption.CallOption) (*TResponse[GetArticlesReply], error) {
 	resp := &TResponse[GetArticlesReply]{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/articles")
+	r := c.hh.Client.R().SetContext(ctx)
+	for _, opt := range opts {
+		opt(r)
+	}
+	_, err := r.SetBody(req).SetResult(resp).Post("/v1/articles")
 	if err != nil {
 		return nil, err
 	}
@@ -43,9 +48,13 @@ func (c *BlogServiceHTTPClientImpl) GetArticles(ctx context.Context, req *GetArt
 	return resp, err
 }
 
-func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx context.Context, req *Article) (*TResponse[Article], error) {
+func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx context.Context, req *Article, opts ...calloption.CallOption) (*TResponse[Article], error) {
 	resp := &TResponse[Article]{}
-	_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post("/v1/author/:author_id/articles")
+	r := c.hh.Client.R().SetContext(ctx)
+	for _, opt := range opts {
+		opt(r)
+	}
+	_, err := r.SetBody(req).SetResult(resp).Post("/v1/author/:author_id/articles")
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +64,7 @@ func (c *BlogServiceHTTPClientImpl) CreateArticle(ctx context.Context, req *Arti
 	return resp, err
 }
 
-func (c *BlogServiceHTTPClientImpl) GetOneArticle(ctx context.Context, req *GetArticlesReq) (*TResponse[GetArticlesReply], error) {
+func (c *BlogServiceHTTPClientImpl) GetOneArticle(ctx context.Context, req *GetArticlesReq, opts ...calloption.CallOption) (*TResponse[GetArticlesReply], error) {
 	// TODO: GET method not support
 	return nil, ecode.NewV2(-1, "GET method not support")
 }

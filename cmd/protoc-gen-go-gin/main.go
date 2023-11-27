@@ -58,6 +58,7 @@ const (
 	httpPackage       = protogen.GoImportPath("net/http")
 	ctxPackage        = protogen.GoImportPath("context")
 	stringsPackage    = protogen.GoImportPath("strings")
+	calloptionPackage = protogen.GoImportPath("github.com/guoming0000/protoc-gen-go-gin/calloption")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -289,6 +290,7 @@ func clientSignature(g *protogen.GeneratedFile, method *protogen.Method) string 
 	var reqArgs []string
 	reqArgs = append(reqArgs, g.QualifiedGoIdent(ctxPackage.Ident("Context")))
 	reqArgs = append(reqArgs, "*"+g.QualifiedGoIdent(method.Input.GoIdent))
+	reqArgs = append(reqArgs, "..."+g.QualifiedGoIdent(calloptionPackage.Ident("CallOption")))
 	return method.GoName + "(" + strings.Join(reqArgs, ", ") + ") " + ret
 }
 
@@ -373,7 +375,7 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 }
 
 func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
-	// Server interface.
+	// http interface.
 	serverType := service.GoName + "HTTPClient"
 	g.P("// ", serverType, " is the client API for ", service.GoName, " service.")
 
@@ -425,9 +427,9 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 	for _, m := range methods {
 		// func (c *XXXHttpClientImpl) XXX(ctx *Context, req *XXXRequest) (*XXXResponse, error)
 		if isOutputOrigin(m.TailingComment) {
-			g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*", m.Reply, ", error) {")
+			g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ", opts ...calloption.CallOption", ") (*", m.Reply, ", error) {")
 		} else {
-			g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ") (*TResponse[", m.Reply, "], error) {")
+			g.P("func (c *", serverType, "Impl) ", m.Name, "(ctx ", ctxPackage.Ident("Context"), ", req *", m.Request, ", opts ...calloption.CallOption", ") (*TResponse[", m.Reply, "], error) {")
 		}
 
 		if m.Method == "GET" {
@@ -441,7 +443,11 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 		} else {
 			g.P("resp := &TResponse[", m.Reply, "]{}")
 		}
-		g.P("_, err := c.hh.Client.R().SetContext(ctx).SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
+		g.P("r := c.hh.Client.R().SetContext(ctx)")
+		g.P(`for _, opt := range opts {
+		opt(r)
+		}`)
+		g.P("_, err := r.SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
 		g.P(fmt.Sprintf(`if err != nil {
 				return nil, err
 			}
