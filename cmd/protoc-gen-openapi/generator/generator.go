@@ -997,7 +997,7 @@ func splitDescription(str, tagname string) (summary string, desc string, tag str
 	l := len(fstrs)
 	if l > 1 {
 		// 如果要支持多个tag，可以考虑用逗号
-		summary = strings.Join(fstrs[0:l-1], "||")
+		summary = strings.Trim(strings.Join(fstrs[0:l-1], "||"), " ")
 		tag = strings.Trim(fstrs[l-1], " ")
 	}
 	return
