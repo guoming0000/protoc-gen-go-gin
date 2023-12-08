@@ -129,6 +129,7 @@ func generateErrorsContent(file *protogen.File, g *protogen.GeneratedFile) {
 	// make error func return ecode.ErrorV2
 	for _, enum := range file.Enums {
 		for _, v := range enum.Values {
+			g.P("// code: ", v.Desc.Number(), " msg: \"", makeErrString(v.Comments, string(v.Desc.Name())), "\"")
 			g.P("func ", case2Camel(string(v.Desc.Name())), "(msg ...string) *", ecodePackage.Ident("ErrorV2"), " {")
 			g.P("return makeNewErr(", v.Desc.Name(), ", msg...)")
 			g.P("}")

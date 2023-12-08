@@ -43,34 +43,42 @@ func makeNewErr(code int, msg ...string) *ecode.ErrorV2 {
 	return ecode.NewV2(code, msgStr)
 }
 
+// code: 0 msg: "unknow error"
 func UnknowError(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(UNKNOW_ERROR, msg...)
 }
 
+// code: 16050030 msg: "product not found"
 func ErrProductNotFound(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(ERR_PRODUCT_NOT_FOUND, msg...)
 }
 
+// code: 16050033 msg: "product module not found"
 func ErrProductModuleNotFound(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(ERR_PRODUCT_MODULE_NOT_FOUND, msg...)
 }
 
+// code: 16050031 msg: "saas device bind fail"
 func ErrSaasDeviceBindFail(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(ERR_SAAS_DEVICE_BIND_FAIL, msg...)
 }
 
+// code: 16050032 msg: "product app found fail"
 func ErrProductAppFoundFail(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(ERR_PRODUCT_APP_FOUND_FAIL, msg...)
 }
 
+// code: 16050016 msg: "register device limit"
 func ErrRegisterDeviceLimit(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(ERR_REGISTER_DEVICE_LIMIT, msg...)
 }
 
+// code: 16050017 msg: "register device single faile"
 func ErrRegisterDeviceSingleFaile(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(ERR_REGISTER_DEVICE_SINGLE_FAILE, msg...)
 }
 
+// code: 16050018 msg: "Register device batch fail !"
 func ErrRegisterDeviceBatchFaile(msg ...string) *ecode.ErrorV2 {
 	return makeNewErr(ERR_REGISTER_DEVICE_BATCH_FAILE, msg...)
 }
