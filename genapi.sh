@@ -7,5 +7,6 @@ go build
 
 protoc -I. -I ./third_party --go-gin_out=./ --go_out=./ api/article.proto
 protoc -I. -I ./third_party --go-gin_out=./ --go_out=./ api/auth.proto
-protoc --go-errors_out=./ api/article_ecode.proto
+# protoc --go-errors_out=./ api/article_ecode.proto
+protoc --go-errors_out=fe_ecode=./api/docs/fe_ecode:./ api/article_ecode.proto
 

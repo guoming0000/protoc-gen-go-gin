@@ -1,0 +1,10 @@
+{
+  "error.0": "unknow error",
+  "error.16050016": "register device limit",
+  "error.16050017": "register device single faile",
+  "error.16050018": "批量注册失败",
+  "error.16050030": "产品不存在(中文注释)",
+  "error.16050031": "saas device bind fail",
+  "error.16050032": "product app found fail",
+  "error.16050033": "product module not found"
+}

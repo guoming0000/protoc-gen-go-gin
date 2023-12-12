@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -25,9 +26,17 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
-var flags flag.FlagSet
+const version = "1.0.0"
 
 func main() {
+	showVersion := flag.Bool("version", false, "print the version and exit")
+	flag.Parse()
+	if *showVersion {
+		fmt.Printf("protoc-gen-openapi %v\n", version)
+		return
+	}
+
+	var flags flag.FlagSet
 	conf := generator.Configuration{
 		Version:        flags.String("version", "0.0.1", "version number text, e.g. 1.2.3"),
 		Title:          flags.String("title", "", "name of the API"),

@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
-const version = "0.0.2"
+const version = "1.0.0"
 
 func main() {
 	showVersion := flag.Bool("version", false, "print the version and exit")

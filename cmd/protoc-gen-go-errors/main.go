@@ -1,34 +1,47 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 	"unicode"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"google.golang.org/protobuf/compiler/protogen"
-	"google.golang.org/protobuf/types/pluginpb"
 )
 
-const version = "0.0.1"
+const version = "1.0.0"
+
+type conf struct {
+	FeEcode *string // front end ecode path
+}
+
+var gConfs conf
+
+func generateFrontEnd() bool {
+	return gConfs.FeEcode != nil && *gConfs.FeEcode != ""
+}
 
 func main() {
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 	if *showVersion {
-		fmt.Printf("protoc-gen-go-gin %v\n", version)
+		fmt.Printf("protoc-gen-go-errors %v\n", version)
 		return
 	}
 
 	var flags flag.FlagSet
+	gConfs = conf{
+		FeEcode: flags.String("fe_ecode", "", "if use front end ecode, please set dir for this param(such as api/docs/fe_ecode)"),
+	}
 
 	protogen.Options{
 		ParamFunc: flags.Set,
 	}.Run(func(gen *protogen.Plugin) error {
-		gen.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 		for _, f := range gen.Files {
 			if !f.Generate {
 				continue
@@ -69,6 +82,10 @@ func generateErrors(gen *protogen.Plugin, file *protogen.File) *protogen.Generat
 	g := gen.NewGeneratedFile(file.GeneratedFilenamePrefix+".pb.go", file.GoImportPath)
 	generateFileHeader(g, file, gen)
 	generateErrorsContent(file, g)
+
+	if generateFrontEnd() {
+		generateFrontEndErrorsFile(file, g)
+	}
 	return g
 }
 
@@ -159,9 +176,65 @@ func generateErrorsContent(file *protogen.File, g *protogen.GeneratedFile) {
 	}
 }
 
+// generateErrorsContent generates the http service definitions, excluding the package statement.
+func generateFrontEndErrorsFile(file *protogen.File, g *protogen.GeneratedFile) {
+	if 0 == len(file.Enums) {
+		g.Skip()
+		return
+	}
+
+	enMap := map[string]string{}
+	zhMap := map[string]string{}
+	for _, enum := range file.Enums {
+		for _, v := range enum.Values {
+			en, zh := getEnZhErrorString(v.Comments, string(v.Desc.Name()))
+			key := fmt.Sprintf("error.%v", int32(v.Desc.Number()))
+			enMap[key] = en
+			zhMap[key] = zh
+		}
+	}
+
+	if buf, err := json.MarshalIndent(enMap, "", "  "); err == nil {
+		pathname := path.Join(*gConfs.FeEcode, path.Base(string(file.GoImportPath)+"/en.json"))
+		os.MkdirAll(path.Dir(pathname), 0755)
+		os.WriteFile(pathname, buf, 0644)
+	}
+	if buf, err := json.MarshalIndent(zhMap, "", "  "); err == nil {
+		pathname := path.Join(*gConfs.FeEcode, path.Base(string(file.GoImportPath)+"/zh.json"))
+		os.MkdirAll(path.Dir(pathname), 0755)
+		os.WriteFile(pathname, buf, 0644)
+	}
+}
+
+func getEnZhErrorString(comment protogen.CommentSet, name string) (string, string) {
+	if comment.Trailing.String() != "" {
+		en := strings.TrimSpace(strings.Replace(comment.Trailing.String(), "//", "", 1))
+		zh := en
+		if generateFrontEnd() {
+			strs := strings.Split(en, "||")
+			if len(strs) == 2 {
+				en = strings.TrimSpace(strs[0])
+				zh = strings.TrimSpace(strs[1])
+			}
+		}
+		return en, zh
+	}
+	en := err2word(name)
+	return en, en
+}
+
 func makeErrString(comment protogen.CommentSet, name string) string {
 	if comment.Trailing.String() != "" {
-		return strings.TrimSpace(strings.Replace(comment.Trailing.String(), "//", "", 1))
+		str := strings.TrimSpace(strings.Replace(comment.Trailing.String(), "//", "", 1))
+
+		if generateFrontEnd() {
+			strs := strings.Split(str, "||")
+			if len(strs) == 2 {
+				str = strings.TrimSpace(strs[0])
+			}
+		}
+
+		return str
 	}
 	return err2word(name)
 }
