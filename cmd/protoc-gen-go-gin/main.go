@@ -353,14 +353,18 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 			defaultRetMethodOne = `setRetJSON(&ctx, nil, err)`
 			defaultRetMethodTwo = `setRetOrigin(&ctx, resp)`
 		}
-		g.P(`var err error
+		if m.InputFieldsCount != 0 {
+			g.P(`var err error
 			ctx := api.NewContext(g)
 			err = parseReq(&ctx, req)
 			err = checkValidate(err)
 			if err != nil {`)
-		g.P(defaultRetMethodOne)
-		g.P(`return`)
-		g.P(`}`)
+			g.P(defaultRetMethodOne)
+			g.P(`return`)
+			g.P(`}`)
+		} else {
+			g.P(`ctx := api.NewContext(g)`)
+		}
 
 		if isOutputOrigin(m.TailingComment) {
 			g.P("resp := srv.", m.Name, "(&ctx, req)")
@@ -474,10 +478,11 @@ type method struct {
 	Request          string // SayHelloReq
 	Reply            string // SayHelloResp
 	// http_rule
-	Path         string // 路由
-	Method       string // HTTP Method
-	Body         string
-	ResponseBody string
+	Path             string // 路由
+	Method           string // HTTP Method
+	Body             string
+	ResponseBody     string
+	InputFieldsCount int
 }
 
 //
@@ -541,6 +546,7 @@ func buildMethodDesc(g *protogen.GeneratedFile, m *protogen.Method, httpMethod, 
 		Reply:            g.QualifiedGoIdent(m.Output.GoIdent),
 		Path:             path,
 		Method:           httpMethod,
+		InputFieldsCount: len(m.Input.Fields),
 	}
 	md.initPathParams()
 	return md

@@ -80,14 +80,7 @@ func _AuthService_Pull_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Conte
 func _AuthService_GetOneArticlePure_HTTP_Handler(srv AuthServiceHTTPServer) func(g *gin.Context) {
 	return func(g *gin.Context) {
 		req := &GetOneArticlePureReq{}
-		var err error
 		ctx := api.NewContext(g)
-		err = parseReq(&ctx, req)
-		err = checkValidate(err)
-		if err != nil {
-			setRetJSON(&ctx, nil, err)
-			return
-		}
 		resp := srv.GetOneArticlePure(&ctx, req)
 		setRetOrigin(&ctx, resp)
 	}
