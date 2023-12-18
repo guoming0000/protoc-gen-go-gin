@@ -42,6 +42,10 @@ service AuthService {
   rpc GetOneArticlePure(GetOneArticlePureReq) returns (GetOneArticlePureResp) { // output=origin
     option (google.api.http) = { get: "/v1/get/article"};
   }
+
+  rpc PostOneArticlePure(GetOneArticlePureReq) returns (GetOneArticlePureResp) { // output=origin
+    option (google.api.http) = { post: "/v1/get/article"};
+  }
 }
 
 // 这个是PushReq的标题2

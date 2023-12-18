@@ -38,7 +38,7 @@ paths:
         post:
             tags:
                 - 商米助手
-            summary: 'Push发送1 '
+            summary: Push发送1
             description: |4-
                  发送1<br>
                  发送2<br>
@@ -76,6 +76,17 @@ paths:
                 - AuthService
             summary: 测试特殊的返回
             operationId: AuthService_GetOneArticlePure
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetOneArticlePureResp'
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_PostOneArticlePure
             responses:
                 "200":
                     description: OK

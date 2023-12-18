@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
-const version = "1.0.1"
+const version = "1.0.2"
 
 func main() {
 	showVersion := flag.Bool("version", false, "print the version and exit")
@@ -452,14 +452,21 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 		opt(r)
 		}`)
 		g.P("_, err := r.SetBody(req).SetResult(resp).Post(\"", m.Path, "\")")
-		g.P(fmt.Sprintf(`if err != nil {
+		g.P(`if err != nil {
 				return nil, err
-			}
-			if resp.Code != 1 {
-				err = %v(int(resp.Code), resp.Msg)
-			}
-			return resp, err
-		}`, g.QualifiedGoIdent(ecodePackage.Ident("NewV2"))))
+		}`)
+
+		if isOutputOrigin(m.TailingComment) {
+			g.P(` return resp, nil 
+			}`)
+		} else {
+			g.P(fmt.Sprintf(`if resp.Code != 1 {
+					 err = %v(int(resp.Code), resp.Msg)
+				 }
+				 return resp, err
+			}`, g.QualifiedGoIdent(ecodePackage.Ident("NewV2"))))
+		}
+
 		g.P()
 	}
 }

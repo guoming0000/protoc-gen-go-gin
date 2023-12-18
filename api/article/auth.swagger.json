@@ -56,7 +56,7 @@
         "tags": [
           "商米助手"
         ],
-        "summary": "Push发送1 ",
+        "summary": "Push发送1",
         "description": " 发送1<br>\n 发送2<br>\n > 发送3\n 发送4\n `import from json`\n 这是一个链接 [Markdown语法](https://markdown.com.cn \"最好的markdown教程\")。\n\n | 错误码 | 错误消息 | 错误描述 |\n| --- | ---- | ---- |\n| 10207  | ath not match                     | 服务端token不一致      |\n| 10224  | device not found                  | 设备不存在             |\n| 10114  | task not found                    | 自动下载密钥任务不存在 |\n| 10208  | binding key not found             | 绑定密钥不存在         |\n| 10212  | no available license              | 没有可用license        |\n| 10213  | license download times not enough | license 下载次数不足   |\n| 500    |                                   | 程序异常               |<br><br><b><font color=\"green\">其它router路径(additional_bindings):</b></font> <br><b>POST /private/v1/push</b><br><b>POST /private/v1/push2</b>",
         "operationId": "AuthService_Push",
         "requestBody": {
@@ -90,6 +90,24 @@
         ],
         "summary": "测试特殊的返回",
         "operationId": "AuthService_GetOneArticlePure",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetOneArticlePureResp"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "AuthService"
+        ],
+        "operationId": "AuthService_PostOneArticlePure",
         "responses": {
           "200": {
             "description": "OK",
