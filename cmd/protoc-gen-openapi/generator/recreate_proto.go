@@ -46,6 +46,7 @@ func RecreateProto(originProto3Path, descProto3Path string) {
 	// 逐行读取文件内容
 	rawMethods := []string{}
 	re := regexp.MustCompile(`returns\s*\((\w+)\)`)
+	structMap := map[string]bool{}
 	for scanner.Scan() {
 		rawLine := scanner.Text()
 		line := strings.Trim(rawLine, " ")
@@ -72,6 +73,12 @@ func RecreateProto(originProto3Path, descProto3Path string) {
 
 	buf.WriteString("\n")
 	for _, m := range rawMethods {
+		if _, ok := structMap[m]; ok {
+			// 跳过一样的response
+			continue
+		}
+		structMap[m] = true
+
 		buf.WriteString("message T" + m + " {\n")
 		buf.WriteString("   int32 code = 1; // binding:\"required\"\n")
 		buf.WriteString("   string msg = 2; // binding:\"required\"\n")
