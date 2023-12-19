@@ -10,7 +10,9 @@ import (
 	sonic "github.com/bytedance/sonic"
 	binding "github.com/gin-gonic/gin/binding"
 	api "github.com/sunmi-OS/gocore/v2/api"
+	ecode "github.com/sunmi-OS/gocore/v2/api/ecode"
 	utils "github.com/sunmi-OS/gocore/v2/utils"
+	math "math"
 	http "net/http"
 )
 
@@ -20,15 +22,20 @@ type TResponse[T any] struct {
 	Msg  string `json:"msg"`
 }
 
-var validateErr error = api.ErrorBind
+var defaultValidateErr error = api.ErrorBind
 var releaseShowDetail bool
 var disableValidate bool
+var validateCode int = math.MaxInt
 
-// set you error or use api.ErrorBind(diable:是否启用自动validate, 如果启用则返回 validateErr or 原始错误)
+// set you error or use api.ErrorBind(diable:是否启用自动validate, 如果启用则返回 defaultValidateErr or 原始错误)
 func SetAutoValidate(disable bool, validatErr error, releaseShowDetail bool) {
 	disableValidate = disable
-	validateErr = validatErr
+	defaultValidateErr = validatErr
 	releaseShowDetail = releaseShowDetail
+}
+
+func SetValidateCode(code int) {
+	validateCode = code
 }
 
 func checkValidate(err error) error {
@@ -36,7 +43,11 @@ func checkValidate(err error) error {
 		return nil
 	}
 	if utils.IsRelease() && !releaseShowDetail {
-		return validateErr
+		return defaultValidateErr
+	}
+
+	if validateCode != math.MaxInt {
+		return ecode.NewV2(validateCode, err.Error())
 	}
 	return err
 }

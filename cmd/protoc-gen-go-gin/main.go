@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
-const version = "1.0.2"
+const version = "1.0.3"
 
 func main() {
 	showVersion := flag.Bool("version", false, "print the version and exit")
@@ -59,6 +59,7 @@ const (
 	ctxPackage        = protogen.GoImportPath("context")
 	stringsPackage    = protogen.GoImportPath("strings")
 	calloptionPackage = protogen.GoImportPath("github.com/guoming0000/protoc-gen-go-gin/calloption")
+	mathPackage       = protogen.GoImportPath("math")
 )
 
 func generateFileHeader(g *protogen.GeneratedFile, file *protogen.File, gen *protogen.Plugin) {
@@ -98,15 +99,20 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 	g.P("type TResponse[T any] struct {\n\tCode int32    `json:\"code\"`\n\tData *T     `json:\"data\"`\n\tMsg  string `json:\"msg\"`\n}")
 	g.P()
 
-	g.P("var validateErr error = ", gocoreApi.Ident("ErrorBind"))
+	g.P("var defaultValidateErr error = ", gocoreApi.Ident("ErrorBind"))
 	g.P(`var releaseShowDetail bool
 	var disableValidate bool
+	var validateCode int = `, mathPackage.Ident("MaxInt"), `
 
-	// set you error or use api.ErrorBind(diable:是否启用自动validate, 如果启用则返回 validateErr or 原始错误)
+	// set you error or use api.ErrorBind(diable:是否启用自动validate, 如果启用则返回 defaultValidateErr or 原始错误)
 	func SetAutoValidate(disable bool, validatErr error, releaseShowDetail bool) {
 		disableValidate = disable
-		validateErr = validatErr
+		defaultValidateErr = validatErr
 		releaseShowDetail = releaseShowDetail
+	}
+
+	func SetValidateCode(code int) {
+		validateCode = code
 	}
 	`)
 
@@ -115,7 +121,11 @@ func generateExtContent(file *protogen.File, g *protogen.GeneratedFile) {
 			return nil
 	}`)
 	g.P("if ", utilsPacakge.Ident("IsRelease"), "() && !releaseShowDetail {")
-	g.P(`return validateErr
+	g.P(`return defaultValidateErr
+		}
+
+		if validateCode != math.MaxInt {
+			return `, ecodePackage.Ident("NewV2"), `(validateCode, err.Error())
 		}
 		return err
 	}`)
