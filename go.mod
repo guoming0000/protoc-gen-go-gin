@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/google/gnostic v0.7.0
 	github.com/sunmi-OS/gocore/v2 v2.1.31
+	github.com/tealeg/xlsx v1.0.5
 	golang.org/x/text v0.13.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20231120223509-83a465c0220f
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f

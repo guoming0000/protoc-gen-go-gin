@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/tealeg/xlsx"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -183,6 +184,23 @@ func generateFrontEndErrorsFile(file *protogen.File, g *protogen.GeneratedFile) 
 		return
 	}
 
+	pathname := path.Join(*gConfs.FeEcode, path.Base(string(file.GoImportPath)+"/zh_en.xlsx"))
+	os.MkdirAll(path.Dir(pathname), 0755)
+	// 创建一个新的Excel文件
+	xFile := xlsx.NewFile()
+
+	// 添加一个新的Sheet
+	sheet, err := xFile.AddSheet("Sheet1")
+	if err != nil {
+		panic(err)
+	}
+	// 在Sheet中添加一行
+	row := sheet.AddRow()
+	cell := row.AddCell()
+	cell.Value = "zh"
+	cell2 := row.AddCell()
+	cell2.Value = "en"
+
 	enMap := map[string]string{}
 	zhMap := map[string]string{}
 	for _, enum := range file.Enums {
@@ -191,17 +209,27 @@ func generateFrontEndErrorsFile(file *protogen.File, g *protogen.GeneratedFile) 
 			key := fmt.Sprintf("error.%v", int32(v.Desc.Number()))
 			enMap[key] = en
 			zhMap[key] = zh
+
+			// 在Sheet中添加一行
+			row := sheet.AddRow()
+			cell := row.AddCell()
+			cell.Value = strings.TrimSpace(zh)
+			cell2 := row.AddCell()
+			cell2.Value = strings.TrimSpace(zh)
 		}
+	}
+
+	err = xFile.Save(pathname)
+	if err != nil {
+		fmt.Println(" xFile.Save err0=", err.Error())
 	}
 
 	if buf, err := json.MarshalIndent(enMap, "", "  "); err == nil {
 		pathname := path.Join(*gConfs.FeEcode, path.Base(string(file.GoImportPath)+"/en.json"))
-		os.MkdirAll(path.Dir(pathname), 0755)
 		os.WriteFile(pathname, buf, 0644)
 	}
 	if buf, err := json.MarshalIndent(zhMap, "", "  "); err == nil {
 		pathname := path.Join(*gConfs.FeEcode, path.Base(string(file.GoImportPath)+"/zh.json"))
-		os.MkdirAll(path.Dir(pathname), 0755)
 		os.WriteFile(pathname, buf, 0644)
 	}
 }
