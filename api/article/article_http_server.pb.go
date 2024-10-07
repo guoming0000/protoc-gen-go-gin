@@ -51,6 +51,12 @@ func _BlogService_CreateArticle_HTTP_Handler(srv BlogServiceHTTPServer) func(g *
 		req := &Article{}
 		var err error
 		ctx := api.NewContext(g)
+		err = ctx.ShouldBindUri(req)
+		err = checkValidate(err)
+		if err != nil {
+			setRetJSON(&ctx, nil, err)
+			return
+		}
 		err = parseReq(&ctx, req)
 		err = checkValidate(err)
 		if err != nil {

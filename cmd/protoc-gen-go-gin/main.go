@@ -363,10 +363,21 @@ func genService(g *protogen.GeneratedFile, service *protogen.Service) {
 			defaultRetMethodOne = `setRetJSON(&ctx, nil, err)`
 			defaultRetMethodTwo = `setRetOrigin(&ctx, resp)`
 		}
+
 		if m.InputFieldsCount != 0 {
 			g.P(`var err error
-			ctx := api.NewContext(g)
-			err = parseReq(&ctx, req)
+			ctx := api.NewContext(g)`)
+
+			if m.HasPathParams() {
+				g.P(`err = ctx.ShouldBindUri(req)
+				err = checkValidate(err)
+				if err != nil {`)
+				g.P(defaultRetMethodOne)
+				g.P(`return`)
+				g.P(`}`)
+			}
+
+			g.P(`err = parseReq(&ctx, req)
 			err = checkValidate(err)
 			if err != nil {`)
 			g.P(defaultRetMethodOne)
@@ -448,7 +459,7 @@ func genClient(g *protogen.GeneratedFile, service *protogen.Service) {
 
 		if m.Method == "GET" {
 			g.P(`// TODO: GET method not support
-				return nil, ecode.NewV2(-1, "GET method not support")
+				return nil, `, ecodePackage.Ident("NewV2"), `(-1, "GET method not support")
 			}`)
 			continue
 		}

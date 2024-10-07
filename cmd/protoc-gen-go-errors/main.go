@@ -196,10 +196,9 @@ func generateFrontEndErrorsFile(file *protogen.File, g *protogen.GeneratedFile) 
 	}
 	// 在Sheet中添加一行
 	row := sheet.AddRow()
-	cell := row.AddCell()
-	cell.Value = "zh"
-	cell2 := row.AddCell()
-	cell2.Value = "en"
+	row.AddCell().Value = "code"
+	row.AddCell().Value = "zh"
+	row.AddCell().Value = "en"
 
 	enMap := map[string]string{}
 	zhMap := map[string]string{}
@@ -211,11 +210,10 @@ func generateFrontEndErrorsFile(file *protogen.File, g *protogen.GeneratedFile) 
 			zhMap[key] = zh
 
 			// 在Sheet中添加一行
-			row := sheet.AddRow()
-			cell := row.AddCell()
-			cell.Value = strings.TrimSpace(zh)
-			cell2 := row.AddCell()
-			cell2.Value = strings.TrimSpace(zh)
+			row = sheet.AddRow()
+			row.AddCell().Value = fmt.Sprintf("%v", int32(v.Desc.Number()))
+			row.AddCell().Value = strings.TrimSpace(zh)
+			row.AddCell().Value = strings.TrimSpace(en)
 		}
 	}
 
